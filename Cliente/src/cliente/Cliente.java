@@ -5,17 +5,52 @@
  */
 package cliente;
 
+import Vista.Chat;
+
 /**
  *
  * @author Tincho
  */
 public class Cliente {
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
+    String host;
+    Integer port;
+    String nick;
+
+    public String getHost() {
+        return host;
     }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
+    public String getNick() {
+        return nick;
+    }
+
+    public void setNick(String nick) {
+        this.nick = nick;
+    }
+    
+    public boolean connect(){
+        return true;
+        //TODO manejar la conexión con el servidor
+    }
+    
+    public boolean disconnect(){
+        return true;
+        //TODO manejar la desconexión con el servidor
+    }
+    
+    
     
 }
