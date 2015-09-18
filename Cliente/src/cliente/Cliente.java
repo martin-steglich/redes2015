@@ -6,6 +6,8 @@
 package cliente;
 
 import Vista.Chat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -13,10 +15,22 @@ import Vista.Chat;
  */
 public class Cliente {
 
-    String host;
-    Integer port;
-    String nick;
+    private String host;
+    private Integer port;
+    private String nick;
+    private List<String> messages;
+    private List<String> messagesToSend;
+    private boolean connected;
+    
 
+    public Cliente() {
+        messages = new ArrayList<>();
+        messagesToSend = new ArrayList<>();
+        connected = false;
+    }
+    
+    
+    
     public String getHost() {
         return host;
     }
@@ -40,17 +54,57 @@ public class Cliente {
     public void setNick(String nick) {
         this.nick = nick;
     }
+
+    public List<String> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<String> messages) {
+        this.messages = messages;
+    }
+
+    public List<String> getMessagesToSend() {
+        return messagesToSend;
+    }
+
+    public void setMessagesToSend(List<String> messagesToSend) {
+        this.messagesToSend = messagesToSend;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+    
+    
     
     public boolean connect(){
-        return true;
-        //TODO manejar la conexión con el servidor
+        connected = true;
+        return connected;
+        //TODO manejar en los threads si el mensaje es de login, 
+        //setear connect en true
     }
     
     public boolean disconnect(){
-        return true;
-        //TODO manejar la desconexión con el servidor
+        connected = false;
+        
+        messages = new ArrayList<>();
+        messagesToSend = new ArrayList<>();
+        
+        return !connected;
+        //TODO manejar en los threads si el mensaje es de logout, 
+        //setear connect en false
     }
     
+    public void addMessage(String message){
+        //System.out.println("M: " + message);
+        messages.add(message);
+    }
     
-    
+    public void sendMessage(String message){
+        messagesToSend.add(message);
+    }
 }

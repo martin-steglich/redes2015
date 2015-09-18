@@ -6,6 +6,9 @@
 package main;
 
 import Vista.Chat;
+import cliente.ThreadsPrueba;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -17,6 +20,14 @@ public class main {
     public static void main(String[] args) {
         Chat chat = new Chat();
         chat.setVisible(true);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        Runnable sender = new ThreadsPrueba(0, chat);
+        //Runnable multicastReceiver = new ThreadsPrueba(1, chat);
+        Runnable receiver = new ThreadsPrueba(2, chat);
+        executor.execute(sender);
+        //executor.execute(multicastReceiver);
+        executor.execute(receiver);
+        
     }
     
 }

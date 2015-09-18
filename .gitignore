@@ -42,3 +42,4 @@ hs_err_pid*
 *.app
 /Cliente/nbproject/private/
 /Cliente/build/
+/Cliente/dist/

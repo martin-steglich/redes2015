@@ -19,6 +19,7 @@ public class Chat extends javax.swing.JFrame {
     
     private Cliente cliente;
     private List<String> chatList;
+    private Integer semaphore;
     
     public Chat() {
         initComponents();
@@ -26,7 +27,7 @@ public class Chat extends javax.swing.JFrame {
         requeriedFields.setVisible(false);
         chatList = new ArrayList<>();
         chatArea.setOpaque(false);
-        
+        semaphore = 1;
         cliente = new Cliente();
     }
 
@@ -35,7 +36,7 @@ public class Chat extends javax.swing.JFrame {
         connectButton.setEnabled(false);
         disconnectButton.setEnabled(true);
         messageField.setEnabled(true);
-        chatArea.setEnabled(true);
+        //chatArea.setEnabled(true);
         statusColor.setBackground(Color.green);
         statusLabel.setText("Conectado");
         sendButton.setEnabled(true);
@@ -54,7 +55,7 @@ public class Chat extends javax.swing.JFrame {
         statusColor.setBackground(Color.red);
         statusLabel.setText("Desconectado");
         sendButton.setEnabled(false);
-        chatArea.setEnabled(false);
+        //chatArea.setEnabled(false);
         hostField.setText(cliente.getHost());
         portField.setText(cliente.getPort().toString());
         nickField.setText(cliente.getNick());
@@ -66,6 +67,43 @@ public class Chat extends javax.swing.JFrame {
         chatArea.setOpaque(false);
         messageField.setText("");
     }
+    
+    public void updateMessages(){
+        chatArea.setListData(cliente.getMessages().toArray());
+        chatArea.ensureIndexIsVisible(cliente.getMessages().size() - 1);
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+    
+    public boolean useSemaphore(){
+        if(semaphore > 0){
+            semaphore--;
+            return true;
+        }
+        return false;
+    }
+    
+    public void returnSemaphore(){
+        semaphore++;
+    }
+
+    public Integer getSemaphore() {
+        return semaphore;
+    }
+
+    public void setSemaphore(Integer semaphore) {
+        this.semaphore = semaphore;
+    }
+    
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -87,12 +125,12 @@ public class Chat extends javax.swing.JFrame {
         sendButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         connectButton = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        chatArea = new javax.swing.JList();
         statusColor = new javax.swing.JTextField();
         statusLabel = new javax.swing.JLabel();
         disconnectButton = new javax.swing.JButton();
         requeriedFields = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        chatArea = new javax.swing.JList();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cliente de Chat - Redes 2015");
@@ -171,19 +209,12 @@ public class Chat extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(connectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 4, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(connectButton, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
         );
-
-        jScrollPane2.setToolTipText("");
-        jScrollPane2.setAutoscrolls(true);
-
-        chatArea.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        chatArea.setFocusable(false);
-        jScrollPane2.setViewportView(chatArea);
 
         statusColor.setBackground(new java.awt.Color(255, 51, 51));
         statusColor.setFocusable(false);
@@ -200,6 +231,10 @@ public class Chat extends javax.swing.JFrame {
 
         requeriedFields.setForeground(new java.awt.Color(255, 0, 51));
         requeriedFields.setText("Todos los campos son obligatorios");
+
+        chatArea.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        chatArea.setFocusable(false);
+        jScrollPane1.setViewportView(chatArea);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -220,12 +255,12 @@ public class Chat extends javax.swing.JFrame {
                                 .addComponent(disconnectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(messageField)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(messageField, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(sendButton))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(statusColor, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -239,18 +274,17 @@ public class Chat extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel1)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(15, 15, 15)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(36, 36, 36)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(40, 40, 40)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(disconnectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(13, 13, 13)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(messageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(sendButton))))
@@ -265,19 +299,30 @@ public class Chat extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
-        String host = hostField.getText();
-        Integer port = Integer.parseInt(portField.getText());
-        String nick = nickField.getText();
+        try{
+            String host = hostField.getText();
+            Integer port = portField.getText().equals("") ? 0 :Integer.parseInt(portField.getText());
+            String nick = nickField.getText();
         
-        if(!host.equals("") && !port.equals("") && !nick.equals("")){
-            requeriedFields.setVisible(false);
-            cliente.setHost(host);
-            cliente.setNick(nick);
-            cliente.setPort(port);
-            boolean connected = cliente.connect();
-            if(connected)
-                connect();
+        if(!host.equals("") && port != 0 && !nick.equals("")){
+            boolean connected = false;
+            while(!connected){
+                requeriedFields.setVisible(false);
+                cliente.setHost(host);
+                cliente.setNick(nick);
+                cliente.setPort(port);
+                if(useSemaphore())
+                    connected = cliente.connect();
+                returnSemaphore();
+                if(connected)
+                    connect();
+            }
         }else{
+            requeriedFields.setText("Todos los campos son obligatorios");
+            requeriedFields.setVisible(true);
+        }
+        }catch(Exception e){
+            requeriedFields.setText("El puerto debe ser numérico");
             requeriedFields.setVisible(true);
         }
         
@@ -287,62 +332,65 @@ public class Chat extends javax.swing.JFrame {
     }//GEN-LAST:event_connectButtonActionPerformed
 
     private void disconnectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectButtonActionPerformed
-        boolean disconnected = cliente.disconnect();
-        
-        if(disconnected)
-            disconnect();
+        boolean disconnected = false;
+        while (!disconnected){
+            if(useSemaphore())
+                disconnected = cliente.disconnect();
+            returnSemaphore();
+            if(disconnected)
+                disconnect();
+        }
     }//GEN-LAST:event_disconnectButtonActionPerformed
 
     private void messageFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_messageFieldKeyPressed
       if(evt.getKeyCode() == KeyEvent.VK_ENTER){
-          chatList.add(cliente.getNick() + ": " + messageField.getText());
-          chatArea.setListData(chatList.toArray());
-          chatArea.ensureIndexIsVisible(chatList.size() - 1);
+          cliente.sendMessage(cliente.getNick() + ": " + messageField.getText());
+          
           messageField.setText("");
       }
     }//GEN-LAST:event_messageFieldKeyPressed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-      chatList.add(cliente.getNick() + ": " + messageField.getText());
-      chatArea.setListData(chatList.toArray());
-      chatArea.ensureIndexIsVisible(chatList.size() - 1);
+        cliente.sendMessage(cliente.getNick() + ": " + messageField.getText());
+        //chatList.add(cliente.getNick() + ": " + messageField.getText());
+//      chatArea.setListData(chatList.toArray());
+//      chatArea.ensureIndexIsVisible(chatList.size() - 1);
       messageField.setText("");
     }//GEN-LAST:event_sendButtonActionPerformed
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Chat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Chat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Chat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Chat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+//    public static void main(String args[]) {
+//        /* Set the Nimbus look and feel */
+//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+//         */
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
+//        } catch (ClassNotFoundException ex) {
+//            java.util.logging.Logger.getLogger(Chat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            java.util.logging.Logger.getLogger(Chat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            java.util.logging.Logger.getLogger(Chat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(Chat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
+//        //</editor-fold>
+    /* Create and display the form */
+        /*java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new Chat().setVisible(true);
             }
         });
-    }
+    }*/
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList chatArea;
@@ -355,7 +403,7 @@ public class Chat extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField messageField;
     private javax.swing.JTextField nickField;
     private javax.swing.JTextField portField;
