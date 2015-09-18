@@ -4,10 +4,10 @@ import java.net.*;
 class UDPServidor{
 
 	public static void main(String args[]) throws Exception{
-		//InetAddress group = InetAddress.getByName("225.5.4.29");	
+		InetAddress group = InetAddress.getByName("225.5.4.29");	
 		InetAddress ip = InetAddress.getByName("localhost");	
-		DatagramSocket socketServidor = new DatagramSocket(9876, ip);
-		//MulticastSocket s = new MulticastSocket(6789);
+		DatagramSocket socketServidor = new DatagramSocket(9875, ip);
+		MulticastSocket s = new MulticastSocket();
  		//s.joinGroup(group);
 
 		
@@ -25,9 +25,11 @@ class UDPServidor{
 
 			int puerto = recibirPaquete.getPort();
 			System.out.println("PORT: " + puerto);
-			DatagramPacket enviarPaquete = new DatagramPacket(enviarDatos, enviarDatos.length, ip, puerto-1);
-			//s.send(enviarPaquete);
-			socketServidor.send(enviarPaquete);
+			DatagramPacket enviarPaquete = new DatagramPacket(enviarDatos, enviarDatos.length, group, 5000);
+			s.send(enviarPaquete);
+			//DatagramPacket enviarPaquete2 = new DatagramPacket(enviarDatos, enviarDatos.length, group);
+			//s.send(enviarPaquete2);
+			//socketServidor.send(enviarPaquete);
 		}
 	}
 

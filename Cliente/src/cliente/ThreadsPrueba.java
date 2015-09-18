@@ -67,7 +67,7 @@ public class ThreadsPrueba implements Runnable {
                                         InetAddress ip = InetAddress.getByName("localhost");
                                         
                                         byte[] data = messages.get(0).getBytes();
-                                        DatagramPacket message = new DatagramPacket(data, data.length, ip, 9876);
+                                        DatagramPacket message = new DatagramPacket(data, data.length, ip, 9875);
                                         socket.send(message);
                                         socket.close();
                                         
@@ -100,7 +100,7 @@ public class ThreadsPrueba implements Runnable {
                                     byte[] addr = chat.getCliente().getHost().getBytes();
                                     chat.returnSemaphore();
                                     InetAddress group = InetAddress.getByName("225.5.4.29");
-                                    MulticastSocket multicastSocket = new MulticastSocket(port);
+                                    MulticastSocket multicastSocket = new MulticastSocket(5000);
                                     multicastSocket.joinGroup(group);
                                     //InetAddress ip = InetAddress.getByAddress(port, addr);
                                     

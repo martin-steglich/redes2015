@@ -22,11 +22,11 @@ public class main {
         chat.setVisible(true);
         ExecutorService executor = Executors.newFixedThreadPool(2);
         Runnable sender = new ThreadsPrueba(0, chat);
-        //Runnable multicastReceiver = new ThreadsPrueba(1, chat);
-        Runnable receiver = new ThreadsPrueba(2, chat);
+        Runnable multicastReceiver = new ThreadsPrueba(1, chat);
+        //Runnable receiver = new ThreadsPrueba(2, chat);
         executor.execute(sender);
-        //executor.execute(multicastReceiver);
-        executor.execute(receiver);
+        executor.execute(multicastReceiver);
+        //executor.execute(receiver);
         
     }
     
