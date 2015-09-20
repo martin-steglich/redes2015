@@ -4,10 +4,10 @@ import java.net.*;
 class UDPServidor{
 
 	public static void main(String args[]) throws Exception{
-		InetAddress group = InetAddress.getByName("225.5.4.29");	
+		//InetAddress group = InetAddress.getByName("225.5.4.29");	
 		InetAddress ip = InetAddress.getByName("localhost");	
-		DatagramSocket socketServidor = new DatagramSocket(9875, ip);
-		MulticastSocket s = new MulticastSocket();
+		DatagramSocket socketServidor = new DatagramSocket(54321, ip);
+		//MulticastSocket s = new MulticastSocket(6789);
  		//s.joinGroup(group);
 
 		
@@ -20,16 +20,20 @@ class UDPServidor{
 			
 			String mensajeRecibido = new String(recibirPaquete.getData());
 			System.out.println(mensajeRecibido);
-			enviarDatos = mensajeRecibido.getBytes();
+			Integer puerto = Integer.parseInt((mensajeRecibido.split(">"))[0]);
+			String mensajeAEnviar = (mensajeRecibido.split(">"))[1];
+			enviarDatos = mensajeAEnviar.getBytes();
 			//InetAddress ipAddress = "localhost";
 
-			int puerto = recibirPaquete.getPort();
+			//int puerto = recibirPaquete.getPort();
+			InetAddress ipCliente = recibirPaquete.getAddress();
+
+			System.out.println("MENSAJE: " + mensajeAEnviar);
 			System.out.println("PORT: " + puerto);
-			DatagramPacket enviarPaquete = new DatagramPacket(enviarDatos, enviarDatos.length, group, 5000);
-			s.send(enviarPaquete);
-			//DatagramPacket enviarPaquete2 = new DatagramPacket(enviarDatos, enviarDatos.length, group);
-			//s.send(enviarPaquete2);
-			//socketServidor.send(enviarPaquete);
+			System.out.println("IP: " + ipCliente.toString());
+			DatagramPacket enviarPaquete = new DatagramPacket(enviarDatos, enviarDatos.length, ipCliente, puerto+1);
+			//s.send(enviarPaquete);
+			socketServidor.send(enviarPaquete);
 		}
 	}
 

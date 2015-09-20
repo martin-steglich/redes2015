@@ -17,6 +17,8 @@ public class Cliente {
 
     private String host;
     private Integer port;
+    private String serverHost;
+    private Integer serverPort;
     private String nick;
     private List<String> messages;
     private List<String> messagesToSend;
@@ -78,11 +80,31 @@ public class Cliente {
     public void setConnected(boolean connected) {
         this.connected = connected;
     }
+
+    public String getServerHost() {
+        return serverHost;
+    }
+
+    public void setServerHost(String serverHost) {
+        this.serverHost = serverHost;
+    }
+
+    public Integer getServerPort() {
+        return serverPort;
+    }
+
+    public void setServerPort(Integer serverPort) {
+        this.serverPort = serverPort;
+    }
+    
+    
     
     
     
     public boolean connect(){
         connected = true;
+        String loginMessage = "LOGIN";
+        messagesToSend.add(loginMessage);
         return connected;
         //TODO manejar en los threads si el mensaje es de login, 
         //setear connect en true
@@ -105,6 +127,7 @@ public class Cliente {
     }
     
     public void sendMessage(String message){
-        messagesToSend.add(message);
+        String msg = "MESSAGE " + message + "<CR>";
+        messagesToSend.add(msg);
     }
 }

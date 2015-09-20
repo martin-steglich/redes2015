@@ -58,8 +58,8 @@ public class Chat extends javax.swing.JFrame {
         statusLabel.setText("Desconectado");
         sendButton.setEnabled(false);
         //chatArea.setEnabled(false);
-        hostField.setText(cliente.getHost());
-        portField.setText(cliente.getPort().toString());
+        hostField.setText(cliente.getServerHost());
+        portField.setText(cliente.getServerPort().toString());
         nickField.setText(cliente.getNick());
         hostField.setEnabled(true);
         portField.setEnabled(true);
@@ -311,9 +311,9 @@ public class Chat extends javax.swing.JFrame {
             boolean connected = false;
             while(!connected){
                 requeriedFields.setVisible(false);
-                cliente.setHost(host);
+                cliente.setServerHost(host);
                 cliente.setNick(nick);
-                cliente.setPort(port);
+                cliente.setServerPort(port);
                 if(useSemaphore())
                     connected = cliente.connect();
                 returnSemaphore();
@@ -354,7 +354,7 @@ public class Chat extends javax.swing.JFrame {
     }//GEN-LAST:event_messageFieldKeyPressed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        cliente.sendMessage(cliente.getNick() + ": " + messageField.getText());
+        cliente.sendMessage(messageField.getText());
         //chatList.add(cliente.getNick() + ": " + messageField.getText());
 //      chatArea.setListData(chatList.toArray());
 //      chatArea.ensureIndexIsVisible(chatList.size() - 1);

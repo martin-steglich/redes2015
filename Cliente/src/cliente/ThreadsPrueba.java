@@ -58,20 +58,30 @@ public class ThreadsPrueba implements Runnable {
                             if (chat.useSemaphore()) {
                             //System.out.println("AA");
                                 if (chat.getCliente().isConnected()) {
-                                    Integer port = chat.getCliente().getPort();
                                     List<String> messages = chat.getCliente().getMessagesToSend();
-                                    chat.returnSemaphore();
+                                    
                                     if ((messages != null) && (messages.size() > 0)) {
                                         wait = true;
-                                        socket = new DatagramSocket(port+1);
-                                        InetAddress ip = InetAddress.getByName("localhost");
+                                        socket = new DatagramSocket(0);
+                                        String msg = messages.get(0);
+                                        if(msg.equals("LOGIN")){
+                                            chat.getCliente().setPort(socket.getPort() + 1);
+                                            msg += " " + socket.getInetAddress().toString() + " " + String.valueOf(socket.getPort()) + " " + chat.getCliente().getNick();
+                                        }                                          
                                         
-                                        byte[] data = messages.get(0).getBytes();
-                                        DatagramPacket message = new DatagramPacket(data, data.length, ip, 9875);
+                                        String serverHost = chat.getCliente().getServerHost();
+                                        Integer serverPort = chat.getCliente().getServerPort();
+                                        chat.returnSemaphore();
+                                        InetAddress ip = InetAddress.getByName(serverHost);
+                                        
+                                        byte[] data = msg.getBytes();
+                                        DatagramPacket message = new DatagramPacket(data, data.length, ip, serverPort);
                                         socket.send(message);
                                         socket.close();
                                         
                                         //TODO controlar que se recibio el mensaje  
+                                    }else{
+                                        chat.returnSemaphore();
                                     }
                                 } else {
                                     chat.returnSemaphore();
@@ -96,8 +106,6 @@ public class ThreadsPrueba implements Runnable {
                                 //System.out.println("BB");
                                 if (chat.getCliente().isConnected()) {
                                     
-                                    Integer port = chat.getCliente().getPort();
-                                    byte[] addr = chat.getCliente().getHost().getBytes();
                                     chat.returnSemaphore();
                                     InetAddress group = InetAddress.getByName("225.5.4.29");
                                     MulticastSocket multicastSocket = new MulticastSocket(5000);
@@ -137,18 +145,20 @@ public class ThreadsPrueba implements Runnable {
                                 if (chat.getCliente().isConnected()) {
                                     
                                     Integer port = chat.getCliente().getPort();
-                                    byte[] addr = chat.getCliente().getHost().getBytes();
                                     chat.returnSemaphore();
-                                    InetAddress ip = InetAddress.getByName("localhost");
-                                    //InetAddress ip = InetAddress.getByAddress(port, addr);
-                                    socket = new DatagramSocket(port, ip);
-                                    byte[] data = new byte[1024];
-                                    DatagramPacket message = new DatagramPacket(data, data.length);
-                                    socket.receive(message);
-                                    socket.close();
-                                    receivedMessage = new String(message.getData());
-                                    
-                                    wait = true;
+                                    if(port != null){
+                                        System.out.println("PORT: " + port);
+                                        InetAddress ip = InetAddress.getLocalHost();
+                                        //InetAddress ip = InetAddress.getByAddress(port, addr);
+                                        socket = new DatagramSocket(port, ip);
+                                        byte[] data = new byte[1024];
+                                        DatagramPacket message = new DatagramPacket(data, data.length);
+                                        socket.receive(message);
+                                        socket.close();
+                                        receivedMessage = new String(message.getData());
+
+                                        wait = true;
+                                    }
                                 } else {
                                     chat.returnSemaphore();
                                    
