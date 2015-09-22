@@ -33,67 +33,67 @@ public class Cliente {
     
     
     
-    public String getHost() {
+    public synchronized String getHost() {
         return host;
     }
 
-    public void setHost(String host) {
+    public synchronized void setHost(String host) {
         this.host = host;
     }
 
-    public Integer getPort() {
+    public synchronized Integer getPort() {
         return port;
     }
 
-    public void setPort(Integer port) {
+    public synchronized void setPort(Integer port) {
         this.port = port;
     }
 
-    public String getNick() {
+    public synchronized String getNick() {
         return nick;
     }
 
-    public void setNick(String nick) {
+    public synchronized void setNick(String nick) {
         this.nick = nick;
     }
 
-    public List<String> getMessages() {
+    public synchronized List<String> getMessages() {
         return messages;
     }
 
-    public void setMessages(List<String> messages) {
+    public synchronized void setMessages(List<String> messages) {
         this.messages = messages;
     }
 
-    public List<String> getMessagesToSend() {
+    public synchronized List<String> getMessagesToSend() {
         return messagesToSend;
     }
 
-    public void setMessagesToSend(List<String> messagesToSend) {
+    public synchronized void setMessagesToSend(List<String> messagesToSend) {
         this.messagesToSend = messagesToSend;
     }
 
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         return connected;
     }
 
-    public void setConnected(boolean connected) {
+    public synchronized void setConnected(boolean connected) {
         this.connected = connected;
     }
 
-    public String getServerHost() {
+    public synchronized String getServerHost() {
         return serverHost;
     }
 
-    public void setServerHost(String serverHost) {
+    public synchronized void setServerHost(String serverHost) {
         this.serverHost = serverHost;
     }
 
-    public Integer getServerPort() {
+    public synchronized Integer getServerPort() {
         return serverPort;
     }
 
-    public void setServerPort(Integer serverPort) {
+    public synchronized void setServerPort(Integer serverPort) {
         this.serverPort = serverPort;
     }
     
@@ -101,7 +101,7 @@ public class Cliente {
     
     
     
-    public boolean connect(){
+    public synchronized boolean connect(){
         connected = true;
         String loginMessage = "LOGIN";
         messagesToSend.add(loginMessage);
@@ -110,7 +110,7 @@ public class Cliente {
         //setear connect en true
     }
     
-    public boolean disconnect(){
+    public synchronized boolean disconnect(){
         connected = false;
         
         messages = new ArrayList<>();
@@ -121,12 +121,12 @@ public class Cliente {
         //setear connect en false
     }
     
-    public void addMessage(String message){
+    public synchronized void addMessage(String message){
         //System.out.println("M: " + message);
         messages.add(message);
     }
     
-    public void sendMessage(String message){
+    public synchronized void sendMessage(String message){
         String msg = "MESSAGE " + message + "<CR>";
         messagesToSend.add(msg);
     }

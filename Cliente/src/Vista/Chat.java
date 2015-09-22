@@ -46,7 +46,7 @@ public class Chat extends javax.swing.JFrame {
         nickField.setEnabled(false);
         messageField.requestFocus();
         chatArea.setOpaque(true);
-        infoPanel.setVisible(false);
+        //infoPanel.setVisible(false);
         
     }
     
@@ -68,15 +68,15 @@ public class Chat extends javax.swing.JFrame {
         chatArea.setListData(chatList.toArray());
         chatArea.setOpaque(false);
         messageField.setText("");
-        infoPanel.setVisible(true);
+        //infoPanel.setVisible(true);
     }
     
-    public void updateMessages(){
+    public synchronized void updateMessages(){
         chatArea.setListData(cliente.getMessages().toArray());
         chatArea.ensureIndexIsVisible(cliente.getMessages().size() - 1);
     }
 
-    public Cliente getCliente() {
+    public synchronized Cliente getCliente() {
         return cliente;
     }
 
@@ -84,7 +84,7 @@ public class Chat extends javax.swing.JFrame {
         this.cliente = cliente;
     }
     
-    public boolean useSemaphore(){
+    public synchronized boolean useSemaphore(){
         if(semaphore > 0){
             semaphore--;
             return true;
@@ -92,11 +92,11 @@ public class Chat extends javax.swing.JFrame {
         return false;
     }
     
-    public void returnSemaphore(){
+    public synchronized void returnSemaphore(){
         semaphore++;
     }
 
-    public Integer getSemaphore() {
+    public synchronized Integer getSemaphore() {
         return semaphore;
     }
 

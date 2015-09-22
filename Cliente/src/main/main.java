@@ -21,13 +21,13 @@ public class main {
         Chat chat = new Chat();
         chat.setVisible(true);
         ExecutorService executor = Executors.newFixedThreadPool(2);
-        Runnable sender = new ThreadsPrueba(0, chat);
-        Runnable multicastReceiver = new ThreadsPrueba(1, chat);
-        //Runnable receiver = new ThreadsPrueba(2, chat);
+        Thread sender = new Thread(new ThreadsPrueba(0, chat));
+        Thread multicastReceiver = new Thread(new ThreadsPrueba(1, chat));
+        Thread receiver = new Thread(new ThreadsPrueba(2, chat));
         executor.execute(sender);
         executor.execute(multicastReceiver);
-        //executor.execute(receiver);
-        
+        executor.execute(receiver);
+        executor.shutdown();
     }
     
 }
