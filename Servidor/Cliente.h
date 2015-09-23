@@ -13,6 +13,7 @@
 #include <string>
 
 using namespace std;
+
 class Cliente {
 public:
     Cliente(string host, int port, string nick);

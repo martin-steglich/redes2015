@@ -5,6 +5,9 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>Cliente.h</itemPath>
+      <itemPath>Errores.h</itemPath>
+      <itemPath>HiloAtiende.h</itemPath>
+      <itemPath>ParserComandos.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -14,6 +17,9 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>Cliente.cpp</itemPath>
+      <itemPath>Errores.cpp</itemPath>
+      <itemPath>HiloAtiende.cpp</itemPath>
+      <itemPath>ParserComandos.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -32,7 +38,7 @@
   <confs>
     <conf name="Debug" type="1">
       <toolsSet>
-        <compilerSet>MinGW|MinGW</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -41,6 +47,18 @@
       <item path="Cliente.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Cliente.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Errores.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Errores.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="HiloAtiende.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HiloAtiende.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ParserComandos.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="ParserComandos.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -68,6 +86,18 @@
       <item path="Cliente.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Cliente.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Errores.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Errores.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="HiloAtiende.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HiloAtiende.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ParserComandos.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="ParserComandos.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
