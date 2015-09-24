@@ -65,29 +65,45 @@ public class ThreadsPrueba implements Runnable {
                                     
                                     if ((messages != null) && (messages.size() > 0)) {
                                         wait = true;
-                                        if(chat.getCliente().getPort() == null)
-                                            socket = new DatagramSocket(0);
-                                        else
+                                        if(chat.getCliente().getPort() == null){
+                                            socket = new DatagramSocket();
+                                            
+                                            
+                                        }
+                                        else{
                                             socket = new DatagramSocket(chat.getCliente().getPort());
+                                                                          }
                                             
                                         String msg = messages.get(0);
+                                        //System.out.println(socket.getLocalPort());
                                         
                                         if(msg.equals("LOGIN")){
-                                            chat.getCliente().setPort(socket.getPort());
-                                            msg += " " + socket.getInetAddress().toString() + " " + String.valueOf(socket.getPort()) + " " + chat.getCliente().getNick() + "<CR>";
-                                        }                                          
+                                            chat.getCliente().setPort(socket.getLocalPort());
+                                            //System.out.println(socket.getInetAddress().getCanonicalHostName());
+                                            msg += " " + InetAddress.getLocalHost().getHostAddress() + " " + String.valueOf(socket.getLocalPort()) + " " + chat.getCliente().getNick() + "<CR>";
+                                            System.out.println(msg);
+                                        }        
                                         
                                         String serverHost = chat.getCliente().getServerHost();
                                         Integer serverPort = chat.getCliente().getServerPort();
+                                        //System.out.println(chat.getCliente().getServerHost());
+                                        //System.out.println(chat.getCliente().getServerPort());
                                         chat.returnSemaphore();
                                         InetAddress ip = InetAddress.getByName(serverHost);
                                         
                                         byte[] data = msg.getBytes();
                                         DatagramPacket message = new DatagramPacket(data, data.length, ip, serverPort);
                                         socket.send(message);
-                                        
+                                        /*data = new byte[1024];
+                                        DatagramPacket mess = new DatagramPacket(data, data.length);
+                                        socket.receive(mess);
+                                        receivedMessage = new String(mess.getData());
+                                        chat.getCliente().addMessage(receivedMessage);
+                                        chat.updateMessages();*/
+                                        //chat.returnSemaphore();
                                         //Espero respuesta del servidor, confirmando que le llegó el paquete
-                                        socket.setSoTimeout(5000); //Seteo el tiemout
+                                       
+                                        /*socket.setSoTimeout(5000); //Seteo el tiemout
                                         byte[] ack = new byte[1024];
                                         DatagramPacket getack = new DatagramPacket(ack, ack.length);
                                         int attempts = 0;
@@ -103,11 +119,11 @@ public class ThreadsPrueba implements Runnable {
                                                 socket.send(message);
                                                 attempts++;
                                             }
-                                        }
+                                        }*/
                                         socket.close();
                                         
                                         //Si no se recibio la confirmacion, despliego un mensaje de error
-                                        if(!received){
+                                       /*/if(!received){
                                             String errorMessage = "Fallo el envío del mensaje luego de 3 intentos.\n";
                                             errorMessage += "Servidor no disponible en el host/puerto especificados";
                                             
@@ -118,7 +134,7 @@ public class ThreadsPrueba implements Runnable {
                                                 chat.getCliente().setConnected(true);
                                             }else if(msg.equals("LOGOUT"))
                                                 chat.getCliente().setConnected(false);
-                                        }
+                                        }*/
                                         
                                         //TODO controlar que se recibio el mensaje  
                                     }else{
@@ -198,15 +214,16 @@ public class ThreadsPrueba implements Runnable {
                                     Integer port = chat.getCliente().getPort();
                                     chat.returnSemaphore();
                                     if(port != null){
-                                        System.out.println("PORT: " + port);
+                                        //System.out.println("PORT: " + port);
                                         InetAddress ip = InetAddress.getLocalHost();
                                         //InetAddress ip = InetAddress.getByAddress(port, addr);
-                                        socket = new DatagramSocket(port, ip);
+                                        socket = new DatagramSocket(port+1, ip);
+                                        System.out.println(socket.getLocalPort());
                                         byte[] data = new byte[1024];
                                         DatagramPacket message = new DatagramPacket(data, data.length);
                                         socket.receive(message);
                                         receivedMessage = new String(message.getData());
-                                        
+                                        System.out.println(receivedMessage);
                                         String ack = "ACK"; //Agregar el número de secuencia del mensaje recibido.
                                         DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, message.getAddress(), message.getPort());
                                         socket.send(ackPacket);
@@ -233,7 +250,7 @@ public class ThreadsPrueba implements Runnable {
                     break;
                 }
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
             }finally{
                 if((socket != null)&&(socket.isConnected())&&(!socket.isClosed())){
                    socket.close();

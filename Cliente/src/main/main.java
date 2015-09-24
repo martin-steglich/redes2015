@@ -22,10 +22,10 @@ public class main {
         chat.setVisible(true);
         ExecutorService executor = Executors.newFixedThreadPool(2);
         Thread sender = new Thread(new ThreadsPrueba(0, chat));
-        Thread multicastReceiver = new Thread(new ThreadsPrueba(1, chat));
+        //Thread multicastReceiver = new Thread(new ThreadsPrueba(1, chat));
         Thread receiver = new Thread(new ThreadsPrueba(2, chat));
         executor.execute(sender);
-        executor.execute(multicastReceiver);
+        //executor.execute(multicastReceiver);
         executor.execute(receiver);
         executor.shutdown();
     }
