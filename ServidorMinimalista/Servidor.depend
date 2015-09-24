@@ -1,0 +1,29 @@
+# depslib dependency file v1.0
+1443135033 source:/ens/home01/b/bruno.amaral/Desktop/redes/tarea1/Servidor/main.cpp
+	<iostream>
+	<cstdlib>
+	<iostream>
+	<string>
+	<fcntl.h>
+	<string.h>
+	<stdlib.h>
+	<errno.h>
+	<stdio.h>
+	<netinet/in.h>
+	<resolv.h>
+	<sys/socket.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<arpa/inet.h>
+	<unistd.h>
+	<pthread.h>
+	<string.h>
+
+1442947356 source:/ens/home01/b/bruno.amaral/redes2015/Servidor/Cliente.cpp
+	"Cliente.h"
+
+1442967157 /ens/home01/b/bruno.amaral/redes2015/Servidor/Cliente.h
+	<iostream>
+	<map>
+	<string>
+
