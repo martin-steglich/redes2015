@@ -21,6 +21,9 @@
 #include <pthread.h>
 #include <string.h>
 
+#include "VariablesGlobales.h"
+
+
 
 
 
@@ -38,11 +41,130 @@ using namespace std;
 #define BUFFERSIZE 512 // poner el de los datagramas
 
 
+
+/*class Mutex
+{
+public:
+    //the default constructor
+    Mutex()
+    {
+        InitializeCriticalSection(&m_criticalSection);
+    }
+
+    //destructor
+    ~Mutex()
+    {
+        DeleteCriticalSection(&m_criticalSection);
+    }
+
+    //lock
+    void lock()
+    {
+        EnterCriticalSection(&m_criticalSection);
+    }
+
+    //unlock
+    void unlock()
+    {
+        LeaveCriticalSection(&m_criticalSection);
+    }
+
+private:
+    CRITICAL_SECTION m_criticalSection;
+};
+
+
+class Lock
+{
+public:
+    //the default constructor
+    Lock(Mutex &mutex) : m_mutex(mutex), m_locked(true)
+    {
+        mutex.lock();
+    }
+
+    //the destructor
+    ~Lock()
+    {
+        m_mutex.unlock();
+    }
+
+    //report the state of locking when used as a boolean
+    operator bool () const
+    {
+        return m_locked;
+    }
+
+    //unlock
+    void setUnlock()
+    {
+        m_locked = false;
+    }
+
+private:
+    Mutex &m_mutex;
+    bool m_locked;
+};
+
+*/
+
+int comandosConsola(){
+    string command;
+    bool exit = exit;
+    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+    //Mutex mutex;
+    while (!exit){
+        cin >> command;
+
+        if(command.compare("exit") == 0)
+            exit = true;
+        else if(command.compare("a") == 0)
+            //synchronized(mutex){
+                cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados();
+
+            //}
+
+        else if(command.compare("s") == 0)
+            cout << "Cantidad mensajes enviados" << endl;
+        else if(command.compare("d") == 0)
+            cout << "Cantidad conexiones totales" << endl;
+        else if(command.compare("f") == 0)
+            cout << "Tiempo Ejecucion" << endl;
+    }
+
+    return 1;
+}
+
 int main()
 {
     cout << "Hello world!" << endl;
+    int codigoSalida = 0;
+    bool salir = false;
+    int hijoPid;
+    int pidEstado;
+    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
-    char buffer[BUFFERSIZE];
+    switch ( hijoPid=fork() ){ //creo hijo con fork
+
+       case -1:  // Error
+         cout << "ERROR" << endl;
+         salir = true;
+         break;
+
+       case 0:   // Este es el proceso hijo
+         codigoSalida = comandosConsola();
+
+         if (codigoSalida == 1)
+            exit(EXIT_SUCCESS);
+         else
+            exit(EXIT_FAILURE);// Código de salida
+
+       default:  //Es el proceso padre
+
+         break;
+    }
+
+    /*char buffer[BUFFERSIZE];
     fd_set socketsActuales;
 
     int socketServidorAtiendeLogin;
@@ -88,7 +210,22 @@ int main()
        contador++;
     }
 
-    close(socketServidorAtiendeLogin);
+    close(socketServidorAtiendeLogin);*/
+    while(!salir){
 
+        variablesGlobales->nuevoUsuario();
+        hijoPid=waitpid(-1, &pidEstado, WNOHANG);
+        if (hijoPid>0)
+          {
+            if(WIFEXITED(pidEstado) == 1)
+                salir = true;// un hijo menos
+            // TODO podemos usar los codigos de salida para matar al servidor o los comandos
+            //bajar la bandera servidorArriba, etc
+          }
+      }
     return 0;
 }
+
+
+
+

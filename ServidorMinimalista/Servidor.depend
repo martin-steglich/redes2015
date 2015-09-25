@@ -27,3 +27,43 @@
 	<map>
 	<string>
 
+1443216330 source:/ens/home01/m/martin.steglich/redes2015/ServidorMinimalista/src/ComandosConsola.cpp
+	"ComandosConsola.h"
+
+1443216330 /ens/home01/m/martin.steglich/redes2015/ServidorMinimalista/include/ComandosConsola.h
+
+1443221484 source:/ens/home01/m/martin.steglich/redes2015/ServidorMinimalista/main.cpp
+	<iostream>
+	<cstdlib>
+	<iostream>
+	<string>
+	<fcntl.h>
+	<string.h>
+	<stdlib.h>
+	<errno.h>
+	<stdio.h>
+	<netinet/in.h>
+	<resolv.h>
+	<sys/socket.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<arpa/inet.h>
+	<unistd.h>
+	<pthread.h>
+	<string.h>
+	"VariablesGlobales.h"
+
+1443221586 /ens/home01/m/martin.steglich/redes2015/ServidorMinimalista/include/VariablesGlobales.h
+
+1443220706 source:/ens/home01/m/martin.steglich/redes2015/ServidorMinimalista/src/lock.cpp
+
+1443220755 source:/ens/home01/m/martin.steglich/redes2015/ServidorMinimalista/src/mutex.cpp
+	"mutex.h"
+
+1443219369 /ens/home01/m/martin.steglich/redes2015/ServidorMinimalista/include/mutex.h
+
+1443221607 source:/ens/home01/m/martin.steglich/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
+	"VariablesGlobales.h"
+	<stdexcept>
+	<string>
+
