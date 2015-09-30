@@ -103,7 +103,7 @@ public class Cliente {
     
     public synchronized boolean connect(){
         connected = true;
-        String loginMessage = "LOGIN";
+        String loginMessage = "LOGIN " + nick + "<CR>";
         messagesToSend.add(loginMessage);
         return connected;
         //TODO manejar en los threads si el mensaje es de login, 
@@ -112,6 +112,9 @@ public class Cliente {
     
     public synchronized boolean disconnect(){
         connected = false;
+        
+        String logoutMessage = "LOGOUT<CR>";
+        messagesToSend.add(logoutMessage);
         
         messages = new ArrayList<>();
         messagesToSend = new ArrayList<>();
@@ -126,8 +129,18 @@ public class Cliente {
         messages.add(message);
     }
     
-    public synchronized void sendMessage(String message){
+    public synchronized void sendRelayedMessage(String message){
         String msg = "MESSAGE " + message + "<CR>";
+        messagesToSend.add(msg);
+    }
+    
+    public synchronized void getConnected(){
+        String msg = "GET_CONNECTED<CR";
+        messagesToSend.add(msg);
+    }
+    
+    public synchronized void sendPirvateMessage(String message, String receptor){
+        String msg = "PRIVATE_MESSAGE " + receptor + " " + message + "<CR>";
         messagesToSend.add(msg);
     }
 }

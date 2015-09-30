@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -23,14 +24,14 @@ public class ThreadsPrueba implements Runnable {
 
     private int type; //0-sender; 1-multicast receiver; 2-private messages receiver
     private Chat chat;
-    private boolean wait;
     private String receivedMessage;
+    private Integer sequenceNumber;
     
 
     public ThreadsPrueba(int type, Chat chat) {
         this.type = type;
         this.chat = chat;
-        this.wait = false;
+        this.sequenceNumber = 0;
 
     }
 
@@ -50,6 +51,82 @@ public class ThreadsPrueba implements Runnable {
         this.chat = chat;
     }
     
+    public String armarPaquete(String sourceHost, Integer sourcePort, String destHost, Integer destPort, String msg, Integer isAck, Integer seq){
+        String message = "<head>"+ sourceHost + "|" + sourcePort + "|" + destHost + "|" + destPort + "|";
+        message += seq + "|" + isAck + "</head>";
+        message += "<data>" + msg + "</data>";
+        
+        return message;
+    }
+    
+    public int getSequenceNumber(String message){
+        String[] split = message.split("</head>")[0].split("|");
+        int seqNum = Integer.parseInt(split[4]);
+        
+        return seqNum; 
+    }
+    
+    public boolean isForMe(String myHost, Integer myPort, String receivedMessage){
+        String[] split = receivedMessage.split("</head>")[0].split("|");
+        
+        String destHost = split[2];
+        Integer destPort = Integer.parseInt(split[3]);
+        
+        return ((destHost.equals(myHost)) && (destPort.equals(myPort))) || isMulticast(receivedMessage);
+        
+    }
+    
+    public boolean isMulticast(String receivedMessage){
+        String[] split = receivedMessage.split("</head>")[0].split("|");
+        
+        String destHost = split[2];
+        Integer destPort = Integer.parseInt(split[3]);
+        
+        return ((destHost.equals("0")) && (destPort.equals(0)));
+    }
+    
+    public String getMessage(String message){
+        String[] split = message.split("<data>")[1].split("</data>")[0].split("<CR>");
+        String data = split[0];
+        
+        String[] splittedData = data.split(" ");
+        
+        String msg = splittedData[1] + ": " + splittedData[2];
+        
+        return msg;
+        
+        
+    }
+    
+    public List<String> getConnected(String message){
+        String[] split = message.split("<data>")[1].split("</data>")[0].split("<CR>");
+        String data = split[0];
+        
+        String[] splittedData = data.split(" ");
+        
+        List<String> connected = new ArrayList<>();
+        for(String s : splittedData)
+            connected.add(s);
+        
+        return connected;
+    }
+    
+    public String getTypeMessage(String message){
+        String[] split = message.split("<data>")[1].split("</data>");
+        String data = split[0];
+        if(data.startsWith("RELAYED_MESSAGE")){
+            return "RELAYED_MESSAGE";
+        }else if(data.startsWith("PRIVATE_MESSAGE")){
+            return "PRIVATE_MESSAGE";
+        }else if(data.startsWith("CONNECTED")){
+            return "CONNECTED";
+        }else if(data.startsWith("GOODBYE")){
+            return "GOODBYE";
+        }
+        
+        return "";
+    }
+    
     @Override
     public void run() {
         DatagramSocket socket = null;
@@ -57,197 +134,138 @@ public class ThreadsPrueba implements Runnable {
             try {
                 switch (type) {
                     case 0: {
-                        if (!wait) {
-                            if (chat.useSemaphore()) {
-                            //System.out.println("AA");
-                                if (chat.getCliente().isConnected()) {
-                                    List<String> messages = chat.getCliente().getMessagesToSend();
-                                    
-                                    if ((messages != null) && (messages.size() > 0)) {
-                                        wait = true;
-                                        if(chat.getCliente().getPort() == null){
-                                            socket = new DatagramSocket();
-                                            
-                                            
-                                        }
-                                        else{
-                                            socket = new DatagramSocket(chat.getCliente().getPort());
-                                                                          }
-                                            
-                                        String msg = messages.get(0);
-                                        //System.out.println(socket.getLocalPort());
-                                        
-                                        if(msg.equals("LOGIN")){
-                                            chat.getCliente().setPort(socket.getLocalPort());
-                                            //System.out.println(socket.getInetAddress().getCanonicalHostName());
-                                            msg += " " + InetAddress.getLocalHost().getHostAddress() + " " + String.valueOf(socket.getLocalPort()) + " " + chat.getCliente().getNick() + "<CR>";
-                                            System.out.println(msg);
-                                        }        
-                                        
-                                        String serverHost = chat.getCliente().getServerHost();
-                                        Integer serverPort = chat.getCliente().getServerPort();
-                                        //System.out.println(chat.getCliente().getServerHost());
-                                        //System.out.println(chat.getCliente().getServerPort());
-                                        chat.returnSemaphore();
-                                        InetAddress ip = InetAddress.getByName(serverHost);
-                                        
-                                        byte[] data = msg.getBytes();
-                                        DatagramPacket message = new DatagramPacket(data, data.length, ip, serverPort);
-                                        socket.send(message);
-                                        /*data = new byte[1024];
-                                        DatagramPacket mess = new DatagramPacket(data, data.length);
-                                        socket.receive(mess);
-                                        receivedMessage = new String(mess.getData());
-                                        chat.getCliente().addMessage(receivedMessage);
-                                        chat.updateMessages();*/
-                                        //chat.returnSemaphore();
-                                        //Espero respuesta del servidor, confirmando que le llegó el paquete
-                                       
-                                        /*socket.setSoTimeout(5000); //Seteo el tiemout
-                                        byte[] ack = new byte[1024];
-                                        DatagramPacket getack = new DatagramPacket(ack, ack.length);
-                                        int attempts = 0;
-                                        boolean received = false;
-                                        while((!received)&&(attempts < 4)){ //intento reenviar hasta que se reciba la confirmación o un máximo de 3 veces.
-                                            try{
-                                                //Intento recibir la confirmación
-                                                socket.receive(getack);
-                                                received = true;
-                                                
-                                            }catch(SocketTimeoutException e){
-                                                //Si se excede el timeout, intento de nuevo el envío.
-                                                socket.send(message);
-                                                attempts++;
-                                            }
-                                        }*/
-                                        socket.close();
-                                        
-                                        //Si no se recibio la confirmacion, despliego un mensaje de error
-                                       /*/if(!received){
-                                            String errorMessage = "Fallo el envío del mensaje luego de 3 intentos.\n";
-                                            errorMessage += "Servidor no disponible en el host/puerto especificados";
-                                            
-                                            //chat.showErrorMessage(errorMessage);
-                                        }else{
-                                            msg = (msg.split(" "))[0];
-                                            if(msg.equals("LOGIN")){
-                                                chat.getCliente().setConnected(true);
-                                            }else if(msg.equals("LOGOUT"))
-                                                chat.getCliente().setConnected(false);
-                                        }*/
-                                        
-                                        //TODO controlar que se recibio el mensaje  
-                                    }else{
-                                        chat.returnSemaphore();
-                                    }
-                                } else {
-                                    chat.returnSemaphore();
-                                    
-                                }
-                            }
-
-                        }
-                        if (wait) {
-                            if (chat.useSemaphore()) {         
-                                chat.getCliente().getMessagesToSend().remove(0);
-                                chat.returnSemaphore();
-                                wait = false;
-                                
-                            }
-                        }
-                    }
-                    break;
-                    case 1:{
-                        if (!wait) {
-                            if (chat.useSemaphore()) {
-                                //System.out.println("BB");
-                                if (chat.getCliente().isConnected()) {
-                                    if(chat.getCliente().getPort() != null){
-                                        int port = chat.getCliente().getPort();
-                                        chat.returnSemaphore();
-                                        InetAddress group = InetAddress.getByName("225.5.4.29");
-                                        MulticastSocket multicastSocket = new MulticastSocket(5000);
-                                        multicastSocket.joinGroup(group);
-                                        //InetAddress ip = InetAddress.getByAddress(port, addr);
-
-                                        byte[] data = new byte[1024];
-                                        DatagramPacket message = new DatagramPacket(data, data.length);
-                                        multicastSocket.receive(message);
-                                        receivedMessage = new String(message.getData());
-                                        
-                                        //Envio el ACK del mensaje recibido al servidor
-                                        DatagramSocket receivedSocket = new DatagramSocket(port);
-                                        String ack = "ACK"; //Agregar el número de secuencia del mensaje recibido.
-                                        DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, message.getAddress(), message.getPort());
-                                        receivedSocket.send(ackPacket);
-                                        receivedSocket.close();
-                                        
-                                        
-
-                                        wait = true;
-                                    }
-                                } else {
-                                    chat.returnSemaphore();
-                                   
-                                }
-                            }
-                        }
-                        if (wait) {
-                            if (chat.useSemaphore()) {      
-                                //System.out.println(receivedMessage);
-                                chat.getCliente().addMessage(receivedMessage);
-                                chat.updateMessages();
-                                chat.returnSemaphore();
-                                wait = false;
-                                
-                            }
-                        }
-                    }
-                        break;
-                    case 2: {
-                        if (!wait) {
+                        if(chat.getCliente().isConnected()){
+                            List<String> messages = chat.getCliente().getMessagesToSend();
                             
-                            if (chat.useSemaphore()) {
-                                //System.out.println("BB");
-                                if (chat.getCliente().isConnected()) {
-                                    
-                                    Integer port = chat.getCliente().getPort();
-                                    chat.returnSemaphore();
-                                    if(port != null){
-                                        //System.out.println("PORT: " + port);
-                                        InetAddress ip = InetAddress.getLocalHost();
-                                        //InetAddress ip = InetAddress.getByAddress(port, addr);
-                                        socket = new DatagramSocket(port+1, ip);
-                                        System.out.println(socket.getLocalPort());
-                                        byte[] data = new byte[1024];
-                                        DatagramPacket message = new DatagramPacket(data, data.length);
-                                        socket.receive(message);
-                                        receivedMessage = new String(message.getData());
-                                        System.out.println(receivedMessage);
-                                        String ack = "ACK"; //Agregar el número de secuencia del mensaje recibido.
-                                        DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, message.getAddress(), message.getPort());
-                                        socket.send(ackPacket);
-                                        socket.close();
-                                        wait = true;
-                                    }
-                                } else {
-                                    chat.returnSemaphore();
-                                   
+                            if((messages != null) && (messages.size() > 0)){
+                                
+                                if(chat.getCliente().getPort() == null){ //Es el Login
+                                    socket = new DatagramSocket();
+                                    chat.getCliente().setPort(socket.getLocalPort());
+                                    chat.getCliente().setHost(InetAddress.getLocalHost().getHostAddress());
+                                }else{
+                                    socket = new DatagramSocket(chat.getCliente().getPort());
                                 }
-                            }
-                        }
-                        if (wait) {
-                            if (chat.useSemaphore()) {      
-                                //System.out.println(receivedMessage);
-                                chat.getCliente().addMessage(receivedMessage);
-                                chat.updateMessages();
-                                chat.returnSemaphore();
-                                wait = false;
+                                
+                                String msg = messages.get(0);                           
+                                
+                                //Obtengo los datos del servidor
+                                String serverHost = chat.getCliente().getServerHost();
+                                Integer serverPort = chat.getCliente().getServerPort();
+                                InetAddress ip = InetAddress.getByName(serverHost);
+                                
+                                String host = chat.getCliente().getHost();
+                                Integer port = chat.getCliente().getPort();
+                                //Le agrego el encabezado al mensaje a enviar
+                                String message = armarPaquete(host,port, serverHost, serverPort, msg, 0, sequenceNumber);
+                                
+                                byte[] data = message.getBytes();
+                                DatagramPacket datagramPacket = new DatagramPacket(data, data.length, ip, serverPort);
+                                
+                                //Envio el paquete
+                                socket.send(datagramPacket);
+                                
+                                
+                                
+                                //Variables para almacenar el ACK
+                                byte[] ack = new byte[1024];
+                                DatagramPacket getAck = new DatagramPacket(ack, ack.length);
+                                
+                                int attempts = 0; //Cantidad de reenvios
+                                boolean received = false; //variable de control sobre si fue recibido el paquete
+                                
+                                //Intengo reenviar hasta que se reciba el ACK o un maximo de 3 veces
+                                while((!received) && (attempts < 4)){
+                                   try{
+                                        //Seteo el timeoute para recibir el ACK
+                                        socket.setSoTimeout(50);
+                                        socket.receive(getAck);
+                                        int seqNum = getSequenceNumber(new String(getAck.getData()));
+                                        if(sequenceNumber == seqNum){
+                                            //Si se recibio un ACK, y coincide el numero de secuencia
+                                            received = true;
+                                            sequenceNumber++;
+                                            socket.setSoTimeout(0);
+                                        }/*else{
+                                            //Si se recibio un ACK, pero no coincide el número de secuencia, reenvio
+                                            socket.send(datagramPacket);
+                                            attempts++;
+                                        }*/
+                                   }catch(SocketTimeoutException e){
+                                       //Si se excede el timeout, reenvio
+                                       socket.send(datagramPacket);
+                                       attempts++;
+                                   }
+                               }
+                               socket.close();
+                               chat.getCliente().getMessagesToSend().remove(0);
+                               if(!received){
+                                   String errorMessage = "Falló el envío del mensaje luego de 3 intentos. \n";
+                                   errorMessage += "Servidor no disponible en el host/puerto especificados";
+                                   
+                                   //chat.showErrorMessage(errorMessage);
+                               }else{
+                                   if(msg.startsWith("LOGIN")){
+                                       chat.getCliente().setConnected(true);
+                                   }/*else if (msgAux.equals("LOGOUT")){
+                                       chat.getCliente().setConnected(false);
+                                   }*/
+                               }
                                 
                             }
                         }
-                    }
-                    break;
+                    }break;
+                    case 1:{
+                        if(chat.getCliente().isConnected()){
+                            //Datos del grupo mutlicast
+                            InetAddress group = InetAddress.getByName("225.5.4.29");
+                            MulticastSocket multicastSocket = new MulticastSocket(5000);
+                            multicastSocket.joinGroup(group);
+                            
+                            //Recibo los mensajes a traves del multicast
+                            byte[] data = new byte[1024];
+                            DatagramPacket message = new DatagramPacket(data, data.length);
+                            multicastSocket.receive(message);
+                            receivedMessage = new String(message.getData());
+                            
+                            //Envio el ACK para el paquete recibido
+                            int seqNum = getSequenceNumber(receivedMessage);
+                            String ack = armarPaquete(chat.getCliente().getHost(), chat.getCliente().getPort(), 
+                                    chat.getCliente().getServerHost(), chat.getCliente().getServerPort(), "", 1, seqNum);
+                                                        
+                            DatagramSocket ackSocket = new DatagramSocket();
+                            DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, message.getAddress(), message.getPort());
+                            ackSocket.send(ackPacket);
+                            ackSocket.close();
+                            
+                            //Proceso el mensaje recibido
+                            if(sequenceNumber == seqNum){
+                                //Si es el numero de secuencia que esperaba
+                                if(isForMe(chat.getCliente().getHost(), chat.getCliente().getPort(), receivedMessage)){
+                                    //Si el paquete es para mi (privado) o multicast
+                                    
+                                    String typeMessage = getTypeMessage(receivedMessage);
+                                    if(typeMessage.equals("GOODBYE")){
+                                        chat.getCliente().setConnected(false);
+                                    }else if(typeMessage.equals("CONNECTED")){
+                                        List<String> connected = getConnected(receivedMessage);
+                                        //chat.updateConnectedList(connected);
+                                    }else if(typeMessage.equals("RELAYED_MESSAGE")){
+                                        String msg = getMessage(receivedMessage);
+                                        msg = "Mensaje de " + msg;
+                                        chat.getCliente().addMessage(msg);
+                                        chat.updateMessages();
+                                    }else if(typeMessage.equals("PRIVATE_MESSAGE")){
+                                        String msg = getMessage(receivedMessage);
+                                        msg = "Mensaje Privado de " + msg;
+                                        chat.getCliente().addMessage(msg);
+                                        chat.updateMessages();
+                                    }
+                                }
+                            }
+                        
+                        }
+                    }break;
                 }
             } catch (Exception e) {
                 //System.out.println(e.getMessage());

@@ -347,14 +347,14 @@ public class Chat extends javax.swing.JFrame {
 
     private void messageFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_messageFieldKeyPressed
       if(evt.getKeyCode() == KeyEvent.VK_ENTER){
-          cliente.sendMessage(cliente.getNick() + ": " + messageField.getText());
+          cliente.sendRelayedMessage(cliente.getNick() + ": " + messageField.getText());
           
           messageField.setText("");
       }
     }//GEN-LAST:event_messageFieldKeyPressed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        cliente.sendMessage(messageField.getText());
+        cliente.sendRelayedMessage(messageField.getText());
         //chatList.add(cliente.getNick() + ": " + messageField.getText());
 //      chatArea.setListData(chatList.toArray());
 //      chatArea.ensureIndexIsVisible(chatList.size() - 1);
