@@ -67,3 +67,48 @@
 	<stdexcept>
 	<string>
 
+1443745765 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
+	<iostream>
+	<cstdlib>
+	<iostream>
+	<string>
+	<fcntl.h>
+	<string.h>
+	<stdlib.h>
+	<errno.h>
+	<stdio.h>
+	<netinet/in.h>
+	<resolv.h>
+	<sys/socket.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<arpa/inet.h>
+	<unistd.h>
+	<pthread.h>
+	<time.h>
+	"VariablesGlobales.h"
+
+1443743432 /home/tincho/Documents/redes2015/ServidorMinimalista/include/VariablesGlobales.h
+	"Cliente.h"
+	<set>
+	<time.h>
+
+1443738112 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/lock.cpp
+
+1443738112 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/mutex.cpp
+	"mutex.h"
+
+1443738112 /home/tincho/Documents/redes2015/ServidorMinimalista/include/mutex.h
+
+1443743320 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
+	"VariablesGlobales.h"
+	<stdexcept>
+	<string>
+
+1443741982 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/Cliente.cpp
+	"Cliente.h"
+
+1443742070 /home/tincho/Documents/redes2015/ServidorMinimalista/include/Cliente.h
+	<string>
+	<time.h>
+

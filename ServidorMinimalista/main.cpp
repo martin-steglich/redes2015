@@ -19,7 +19,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <string.h>
+#include <time.h>
+
 
 #include "VariablesGlobales.h"
 
@@ -40,78 +41,12 @@ using namespace std;
 //Longitud del buffer
 #define BUFFERSIZE 512 // poner el de los datagramas
 
-
-
-/*class Mutex
-{
-public:
-    //the default constructor
-    Mutex()
-    {
-        InitializeCriticalSection(&m_criticalSection);
-    }
-
-    //destructor
-    ~Mutex()
-    {
-        DeleteCriticalSection(&m_criticalSection);
-    }
-
-    //lock
-    void lock()
-    {
-        EnterCriticalSection(&m_criticalSection);
-    }
-
-    //unlock
-    void unlock()
-    {
-        LeaveCriticalSection(&m_criticalSection);
-    }
-
-private:
-    CRITICAL_SECTION m_criticalSection;
-};
-
-
-class Lock
-{
-public:
-    //the default constructor
-    Lock(Mutex &mutex) : m_mutex(mutex), m_locked(true)
-    {
-        mutex.lock();
-    }
-
-    //the destructor
-    ~Lock()
-    {
-        m_mutex.unlock();
-    }
-
-    //report the state of locking when used as a boolean
-    operator bool () const
-    {
-        return m_locked;
-    }
-
-    //unlock
-    void setUnlock()
-    {
-        m_locked = false;
-    }
-
-private:
-    Mutex &m_mutex;
-    bool m_locked;
-};
-
-*/
-
 int comandosConsola(){
     string command;
     bool exit = exit;
+
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+
     //Mutex mutex;
     while (!exit){
         cin >> command;
@@ -119,17 +54,20 @@ int comandosConsola(){
         if(command.compare("exit") == 0)
             exit = true;
         else if(command.compare("a") == 0)
-            //synchronized(mutex){
-                cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados();
-
-            //}
+            cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados();
 
         else if(command.compare("s") == 0)
             cout << "Cantidad mensajes enviados" << endl;
         else if(command.compare("d") == 0)
             cout << "Cantidad conexiones totales" << endl;
-        else if(command.compare("f") == 0)
-            cout << "Tiempo Ejecucion" << endl;
+        else if(command.compare("f") == 0){
+            time_t activeTime = variablesGlobales->getActiveTime();
+
+            time_t serverTime;
+            time(&serverTime);
+            double seconds = difftime(serverTime, activeTime);
+            printf ("El servidor se encuentra activo hace %.f segundos", seconds);
+        }
     }
 
     return 1;
@@ -164,7 +102,7 @@ int main()
          break;
     }
 
-    /*char buffer[BUFFERSIZE];
+    char buffer[BUFFERSIZE];
     fd_set socketsActuales;
 
     int socketServidorAtiendeLogin;
@@ -199,8 +137,8 @@ int main()
     cout << clienteDireccion.sin_port << endl;
     cout << buffer << endl;
 
-    clienteDireccion.sin_port = htons(40291);
-    cout << clienteDireccion.sin_port << endl;
+    //clienteDireccion.sin_port = htons(40291);
+    //cout << clienteDireccion.sin_port << endl;
      if(sendto(socketServidorAtiendeLogin, buffer, strlen(buffer)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion) ) == -1)
         cout << "No Puede mandar msj";
 
@@ -210,7 +148,8 @@ int main()
        contador++;
     }
 
-    close(socketServidorAtiendeLogin);*/
+    close(socketServidorAtiendeLogin);
+
     while(!salir){
 
         variablesGlobales->nuevoUsuario();

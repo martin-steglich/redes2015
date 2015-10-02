@@ -1,6 +1,13 @@
 #ifndef VARIABLESGLOBALES_H
 #define VARIABLESGLOBALES_H
 
+#include "Cliente.h"
+#include <set>
+#include <time.h>
+
+
+
+using namespace std;
 
 class VariablesGlobales
 {
@@ -10,6 +17,8 @@ class VariablesGlobales
         static int cantConectados;
         static int cantMensajesEnviados;
         static int cantConexionesTotales;
+        set<Cliente*> conectados;
+        static time_t activeTime;
 
 
     public:
@@ -17,9 +26,13 @@ class VariablesGlobales
         void nuevoUsuario();
         void nuevoMensaje();
         void nuevaConexion();
-        int getCantConectados();
-        int getCantMensajesEnviados();
-        int getCantConexionesTotales();
+        int getCantConectados()const;
+        int getCantMensajesEnviados()const;
+        int getCantConexionesTotales()const;
+        time_t getActiveTime()const;
+        set<string> getConectados();
+        Cliente* buscarCliente(string nick);
+
         void vaciarMemoria();
 
 };
