@@ -46,6 +46,8 @@ public class Chat extends javax.swing.JFrame {
         nickField.setEnabled(false);
         messageField.requestFocus();
         chatArea.setOpaque(true);
+        privateCheckbox.setEnabled(true);
+        
         //infoPanel.setVisible(false);
         
     }
@@ -68,7 +70,14 @@ public class Chat extends javax.swing.JFrame {
         chatArea.setListData(chatList.toArray());
         chatArea.setOpaque(false);
         messageField.setText("");
+        privateCheckbox.setEnabled(false);
         //infoPanel.setVisible(true);
+    }
+    
+    public void showErrorMessage(String error){
+        requeriedFields.setText(error);
+        requeriedFields.setVisible(true);
+        disconnect();
     }
     
     public synchronized void updateMessages(){
@@ -104,6 +113,12 @@ public class Chat extends javax.swing.JFrame {
         this.semaphore = semaphore;
     }
     
+    public void getConnected(List<String> users){
+        for(String user : users)
+            usersConnected.addItem(user);
+        
+    }
+    
     
     
     
@@ -128,12 +143,14 @@ public class Chat extends javax.swing.JFrame {
         sendButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         connectButton = new javax.swing.JButton();
+        disconnectButton = new javax.swing.JButton();
         statusColor = new javax.swing.JTextField();
         statusLabel = new javax.swing.JLabel();
-        disconnectButton = new javax.swing.JButton();
         requeriedFields = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         chatArea = new javax.swing.JList();
+        privateCheckbox = new javax.swing.JCheckBox();
+        usersConnected = new javax.swing.JComboBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cliente de Chat - Redes 2015");
@@ -161,9 +178,9 @@ public class Chat extends javax.swing.JFrame {
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(infoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(nickField)
-                    .addComponent(portField)
-                    .addComponent(hostField))
+                    .addComponent(nickField, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hostField, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         infoPanelLayout.setVerticalGroup(
@@ -206,24 +223,6 @@ public class Chat extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(connectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(connectButton, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
-        );
-
-        statusColor.setBackground(new java.awt.Color(255, 51, 51));
-        statusColor.setFocusable(false);
-
-        statusLabel.setText("Desconectado");
-
         disconnectButton.setText("Disconnect");
         disconnectButton.setEnabled(false);
         disconnectButton.addActionListener(new java.awt.event.ActionListener() {
@@ -232,66 +231,107 @@ public class Chat extends javax.swing.JFrame {
             }
         });
 
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(connectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(disconnectButton)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(disconnectButton)
+                    .addComponent(connectButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 24, Short.MAX_VALUE))
+        );
+
+        statusColor.setBackground(new java.awt.Color(255, 51, 51));
+        statusColor.setFocusable(false);
+
+        statusLabel.setText("Desconectado");
+
         requeriedFields.setForeground(new java.awt.Color(255, 0, 51));
-        requeriedFields.setText("Todos los campos son obligatorios");
+        requeriedFields.setText("Servidor no disponible en el host/puerto especificados");
 
         chatArea.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         chatArea.setFocusable(false);
         jScrollPane1.setViewportView(chatArea);
+
+        privateCheckbox.setText("Privado");
+        privateCheckbox.setEnabled(false);
+        privateCheckbox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                privateCheckboxStateChanged(evt);
+            }
+        });
+
+        usersConnected.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(117, 117, 117)
+                .addGap(158, 158, 158)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(disconnectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(infoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(messageField, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(sendButton))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(statusColor, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(statusLabel)
-                        .addGap(179, 179, 179)
-                        .addComponent(requeriedFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(requeriedFields, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(usersConnected, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(privateCheckbox))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(messageField, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(sendButton))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(infoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(4, 4, 4)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .addComponent(jLabel1)
-                .addGap(15, 15, 15)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(40, 40, 40)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(disconnectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(messageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(sendButton))))
-                .addGap(9, 9, 9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(messageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sendButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(privateCheckbox)
+                    .addComponent(usersConnected, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(statusColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(statusLabel)
@@ -301,53 +341,17 @@ public class Chat extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
-        try{
-            String host = hostField.getText();
-            Integer port = portField.getText().equals("") ? 0 :Integer.parseInt(portField.getText());
-            String nick = nickField.getText();
-        
-        if(!host.equals("") && port != 0 && !nick.equals("")){
-            boolean connected = false;
-            while(!connected){
-                requeriedFields.setVisible(false);
-                cliente.setServerHost(host);
-                cliente.setNick(nick);
-                cliente.setServerPort(port);
-                if(useSemaphore())
-                    connected = cliente.connect();
-                returnSemaphore();
-                if(connected)
-                    connect();
-            }
-        }else{
-            requeriedFields.setText("Todos los campos son obligatorios");
-            requeriedFields.setVisible(true);
-        }
-        }catch(Exception e){
-            requeriedFields.setText("El puerto debe ser numérico");
-            requeriedFields.setVisible(true);
-        }
-        
-        
-        
-        
-    }//GEN-LAST:event_connectButtonActionPerformed
-
-    private void disconnectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectButtonActionPerformed
-        boolean disconnected = false;
-        while (!disconnected){
-            if(useSemaphore())
-                disconnected = cliente.disconnect();
-            returnSemaphore();
-            if(disconnected)
-                disconnect();
-        }
-    }//GEN-LAST:event_disconnectButtonActionPerformed
-
     private void messageFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_messageFieldKeyPressed
       if(evt.getKeyCode() == KeyEvent.VK_ENTER){
-          cliente.sendRelayedMessage(cliente.getNick() + ": " + messageField.getText());
+          if(privateCheckbox.isSelected()){
+              String receptor = (String) usersConnected.getSelectedItem();
+              String msg = messageField.getText();
+              
+              cliente.sendPirvateMessage(msg, receptor);
+              privateCheckbox.setSelected(false);
+              usersConnected.setEnabled(false);
+          }else
+            cliente.sendRelayedMessage(messageField.getText());
           
           messageField.setText("");
       }
@@ -360,6 +364,44 @@ public class Chat extends javax.swing.JFrame {
 //      chatArea.ensureIndexIsVisible(chatList.size() - 1);
       messageField.setText("");
     }//GEN-LAST:event_sendButtonActionPerformed
+
+    private void privateCheckboxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_privateCheckboxStateChanged
+        if(privateCheckbox.isSelected()){
+            usersConnected.setEnabled(true);
+            cliente.getConnected();
+        }else{
+            usersConnected.setEnabled(false);
+        }
+    }//GEN-LAST:event_privateCheckboxStateChanged
+
+    private void disconnectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectButtonActionPerformed
+        boolean disconnected = false;
+        cliente.disconnect();
+    }//GEN-LAST:event_disconnectButtonActionPerformed
+
+    private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
+        try{
+            String host = hostField.getText();
+            Integer port = portField.getText().equals("") ? 0 :Integer.parseInt(portField.getText());
+            String nick = nickField.getText();
+
+            if(!host.equals("") && port != 0 && !nick.equals("")){
+                cliente.setServerHost(host);
+                cliente.setNick(nick);
+                cliente.setServerPort(port);
+                cliente.connect();
+                requeriedFields.setVisible(false);
+                
+            }else{
+                requeriedFields.setText("Todos los campos son obligatorios");
+                requeriedFields.setVisible(true);
+            }
+        }catch(Exception e){
+            requeriedFields.setText("El puerto debe ser numérico");
+            requeriedFields.setVisible(true);
+        }
+
+    }//GEN-LAST:event_connectButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -410,9 +452,11 @@ public class Chat extends javax.swing.JFrame {
     private javax.swing.JTextField messageField;
     private javax.swing.JTextField nickField;
     private javax.swing.JTextField portField;
+    private javax.swing.JCheckBox privateCheckbox;
     private javax.swing.JLabel requeriedFields;
     private javax.swing.JButton sendButton;
     private javax.swing.JTextField statusColor;
     private javax.swing.JLabel statusLabel;
+    private javax.swing.JComboBox usersConnected;
     // End of variables declaration//GEN-END:variables
 }
