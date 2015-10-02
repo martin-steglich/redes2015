@@ -89,8 +89,6 @@ public class ThreadsPrueba implements Runnable {
     public boolean isACK(String receivedMessage){
         String[] split = receivedMessage.split("</head>")[0].split("\\|");
         int isACK = Integer.parseInt(split[5]);
-        
-        System.out.println("isACK: " + split[5]);
         return (isACK == 1) ? true : false;
     }
     
@@ -190,14 +188,14 @@ public class ThreadsPrueba implements Runnable {
                                     //Seteo el timeoute para recibir el ACK
                                     socket.setSoTimeout(50);
                                     socket.receive(getAck);
-                                    System.out.println(new String(getAck.getData()));
+                                    
                                     String m = new String(getAck.getData());
                                     int seqNum = getSequenceNumber(m);
                                     if((isACK(m))){
                                         if(sequenceNumber == seqNum){
                                             //Si se recibio un ACK, y coincide el numero de secuencia
                                             received = true;
-                                            sequenceNumber++;
+                                            sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
                                             socket.setSoTimeout(0);
                                         }
                                     }else{
@@ -256,6 +254,8 @@ public class ThreadsPrueba implements Runnable {
                             
                             //Proceso el mensaje recibido
                             if(sequenceNumber == seqNum){
+                                sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
+                                
                                 //Si es el numero de secuencia que esperaba
                                 if(isForMe(chat.getCliente().getHost(), chat.getCliente().getPort(), receivedMessage)){
                                     //Si el paquete es para mi (privado) o multicast
