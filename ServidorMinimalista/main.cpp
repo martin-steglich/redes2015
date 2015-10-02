@@ -24,10 +24,24 @@
 
 #include "VariablesGlobales.h"
 
-
-
-
-
+/**
+* El cliente envía el login y
+* guarda el puerto por el que lo envio (va a ser el puerto que siempre va a utilizar para enviar)
+* El servidor cada paquete que le llega tiene que le envía un ACK
+* hacia el mismo (host, puerto) que envió el mensaje
+*
+* Los mensajes desde el servidor se mandan siempre al multicast (desde el lado del cliente
+* se verifica si es para él). Los clientes, por más que no sean los destinatarios del mensaje,
+* siempre mandan un ACK.
+*
+* La idea para obtener el host y puerto origen de un mensaje es parsear el header y obtener los
+* campos que corresponden a eso. Siempre enviar a ese par (host, puerto).
+*
+* Cuando llega un login (es un nuevo Cliente), se parsea el mensaje y se obtiene:
+* host, puerto (del header) y nick (del data), se crea una nueva instancia de
+* Cliente pasándole host, puerto, nick, y un time_t (mirar el comando f en la función comandosConsola)
+*
+**/
 using namespace std;
 
 
@@ -102,7 +116,7 @@ int main()
          break;
     }
 
-    char buffer[BUFFERSIZE];
+    /*char buffer[BUFFERSIZE];
     fd_set socketsActuales;
 
     int socketServidorAtiendeLogin;
@@ -137,8 +151,8 @@ int main()
     cout << clienteDireccion.sin_port << endl;
     cout << buffer << endl;
 
-    //clienteDireccion.sin_port = htons(40291);
-    //cout << clienteDireccion.sin_port << endl;
+    clienteDireccion.sin_port = htons(40291);
+    cout << clienteDireccion.sin_port << endl;
      if(sendto(socketServidorAtiendeLogin, buffer, strlen(buffer)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion) ) == -1)
         cout << "No Puede mandar msj";
 
@@ -148,8 +162,7 @@ int main()
        contador++;
     }
 
-    close(socketServidorAtiendeLogin);
-
+    close(socketServidorAtiendeLogin);*/
     while(!salir){
 
         variablesGlobales->nuevoUsuario();
