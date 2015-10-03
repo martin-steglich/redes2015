@@ -91,17 +91,17 @@
         char * usuario = strtok(NULL,"<");
         return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,LOGIN,usuario,NULL,false,NULL);
     }
-    else if (strcmp(tipo,"LOGOUT" == 0)){
+    else if (strcmp(tipo,"LOGOUT") == 0){
         return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,LOGOUT,NULL,NULL,false,NULL);
     }
     else if (strcmp(tipo,"GET_CONNECTED") == 0){
         return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,GET_CONNECTED,NULL,NULL,false,NULL);
     }
-    else if (strcmp(tipo,"MESSAGE" == 0)){
+    else if (strcmp(tipo,"MESSAGE") == 0){
         char * msj = strtok(NULL,"<");
         return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,MESSAGE,NULL,msj,false,NULL);
     }
-    else if (strcmp(tipo,"PRIVATE_MESSAGE" == 0)){
+    else if (strcmp(tipo,"PRIVATE_MESSAGE") == 0){
         char * destinatario = strtok(NULL," ");
         char * msj = strtok(NULL,"<");
         return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,PRIVATE_MESSAGE,NULL,msj,true,destinatario);
