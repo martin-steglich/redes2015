@@ -5,18 +5,18 @@
 #include <string.h>
 #include <exception>
 
-    Comando::Comando(char sourceHost[80], char* sourcePort,char* destHost, char* destPort, char* numSeq, tipoComando tipo,char* usuario,char* mensaje,bool mensajePrivado,char*  destinatarioMensajePrivado){
+    Comando::Comando(char* sourceHost,unsigned int sourcePort,char* destHost,unsigned int destPort,unsigned int numSeq, tipoComando tipo,char* usuario,char* mensaje,bool mensajePrivado,char*  destinatarioMensajePrivado){
 
         this->tipo = tipo;
         this->usuario = usuario;
         this->mensaje = mensaje;
         this->mensajePrivado = mensajePrivado;
         this->destinatarioMensajePrivado = destinatarioMensajePrivado;
-        this->sourceHost;
-        this->sourcePort;
-        this->destHost;
-        this->destPort;
-        this->numSeq;
+        this->sourceHost = sourceHost;
+        this->sourcePort = sourcePort;
+        this->destHost = destHost;
+        this->destPort = destPort;
+        this->numSeq = numSeq;
 
 
     };
@@ -45,16 +45,20 @@
     char* Comando::getSourceHost(){
     return this->sourceHost;
     };
-    char* Comando::getSourcePort(){
+
+    unsigned int Comando::getSourcePort(){
     return this->sourcePort;
     };
+
     char* Comando::getDestHost(){
     return this->destHost;
     };
-    char* Comando::getDestPort(){
+
+    unsigned int Comando::getDestPort(){
     return this->destPort;
     };
-    char* Comando::getNumSeq(){
+
+    unsigned int Comando::getNumSeq(){
     return this->numSeq;
     };
 
@@ -67,27 +71,32 @@
     char * pch = strtok (copia,">");//saco hasta head
     cout << pch << endl;
     pch = strtok (NULL, "|");//agarro hasta Pipe
-    cout << pch << endl;
-    char sourceHost[80];// =  pch;
-    strcpy(sourceHost,pch);
+    char* sourceHost =  pch;
+    //strcpy(sourceHost,pch);
     cout << sourceHost << endl;
     pch = strtok (NULL, "|");
-    char* sourcePort =  pch;
+    unsigned int sourcePort =  atoi(pch);
+    cout << sourcePort << endl;
     pch = strtok (NULL, "|");
     char * destHost =  pch;
+    cout << destHost << endl;
     pch = strtok (NULL, "|");
-    char* destPort =  pch;
+    unsigned int destPort =  atoi(pch);
+    cout << destPort << endl;
     pch = strtok (NULL, "|");
-    char* numSeq =  pch;
+    unsigned int numSeq =  atoi(pch);
     pch = strtok (NULL, "<");
     bool isAck =  pch;
+    cout << numSeq << endl;
     pch = strtok (NULL, ">");// saco /head
     pch = strtok (NULL, ">");//saco data
     pch = strtok (NULL, "<");//agarro todo los datos
 
     char * tipo = strtok(pch, " <");//agarro el comando
+    cout << tipo << endl;
 
     if (strcmp(tipo,"LOGIN") == 0){
+
         char * usuario = strtok(NULL,"<");
         return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,LOGIN,usuario,NULL,false,NULL);
     }

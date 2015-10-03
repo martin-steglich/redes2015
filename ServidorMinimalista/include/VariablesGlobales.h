@@ -42,7 +42,7 @@ class VariablesGlobales
         void nuevoUsuario(string host, int port, string nick);
         void nuevoMensaje();
         void nuevaConexion();
-        void finConexion(string host, unsigned int port);
+        void finConexion(string host,unsigned int port);
         int getCantConectados()const;
         int getCantMensajesEnviados()const;
         int getCantConexionesTotales()const;

@@ -67,10 +67,9 @@
 	<stdexcept>
 	<string>
 
-1443889101 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
+1443846052 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
 	<iostream>
 	<cstdlib>
-	"ParserComandos.h"
 	<iostream>
 	<string>
 	<fcntl.h>
@@ -86,7 +85,7 @@
 	<arpa/inet.h>
 	<unistd.h>
 	<pthread.h>
-	<mutex.h>
+	<time.h>
 	"VariablesGlobales.h"
 
 1443846060 /home/tincho/Documents/redes2015/ServidorMinimalista/include/VariablesGlobales.h
@@ -99,8 +98,7 @@
 1443839263 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/mutex.cpp
 	"mutex.h"
 
-1443847241 /home/tincho/Documents/redes2015/ServidorMinimalista/include/mutex.h
-	<pthread.h>
+1443839263 /home/tincho/Documents/redes2015/ServidorMinimalista/include/mutex.h
 
 1443846091 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
 	"VariablesGlobales.h"
@@ -114,7 +112,7 @@
 	<string>
 	<time.h>
 
-1443887790 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/main.cpp
+1443902123 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/main.cpp
 	<iostream>
 	<cstdlib>
 	"ParserComandos.h"
@@ -136,24 +134,24 @@
 	<mutex.h>
 	"VariablesGlobales.h"
 
-1443888020 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/ParserComandos.h
+1443897603 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/ParserComandos.h
 
 1443847679 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/mutex.h
 	<pthread.h>
 
-1443847679 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/VariablesGlobales.h
+1443897574 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/VariablesGlobales.h
 	<set>
 	<time.h>
 	<string>
 
-1443847679 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/Cliente.cpp
+1443892705 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/Cliente.cpp
 	"Cliente.h"
 
-1443847679 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/Cliente.h
+1443892705 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/Cliente.h
 	<string>
 	<time.h>
 
-1443887946 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/ParserComandos.cpp
+1443901622 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/ParserComandos.cpp
 	"ParserComandos.h"
 	<stdio.h>
 	<iostream>
@@ -161,18 +159,10 @@
 	<string.h>
 	<exception>
 
-1443847679 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
+1443900482 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
 	"VariablesGlobales.h"
 	<stdexcept>
 	<string>
-
-1443889101 /home/tincho/Documents/redes2015/ServidorMinimalista/include/ParserComandos.h
-
-1443892669 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/ParserComandos.cpp
-	"ParserComandos.h"
-	<stdio.h>
 	<iostream>
 	<cstdlib>
-	<string.h>
-	<exception>
 

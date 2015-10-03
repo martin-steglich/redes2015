@@ -9,7 +9,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
-
 #include <errno.h>
 #include <stdio.h>
 #include <netinet/in.h>
@@ -21,6 +20,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <mutex.h>
+
 
 
 #include "VariablesGlobales.h"
@@ -45,7 +45,8 @@
 **/
 using namespace std;
 
-
+#define HELLO_PORT 5000
+#define HELLO_GROUP "225.5.4.29"
 //Puerto
 #define PORT 54321
 
@@ -218,68 +219,113 @@ void privateMessage(int puerto, string host, int serverPort, string serverHost, 
 
 }
 //puerto y host corresponden al emisor del mensaje (es para borrarlo de los conectados)
-void logout(int puerto, string host, int serverPort, string serverHost){
+void logout(int socket, Comando comand, struct sockaddr_in clienteDireccion, struct sockaddr_in multicastDir){
+
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
-    Cliente* cliente = variablesGlobales->buscarCliente(host, puerto);
-    variablesGlobales->finConexion(host,puerto);
+    //Cliente* cliente = variablesGlobales->buscarCliente(comand.getSourceHost(), comand.getSourcePort());
+    //variablesGlobales->finConexion(comand.getSourceHost(), comand.getSourcePort());
 
+    //ACK para el que abandona debe ser Bolso
     string message = "<head>";
-    message.append(serverHost);
+    message.append(comand.getDestHost());
     message.append("|");
 
     char* serverPortStr = new char();
-    sprintf(serverPortStr,"%d",serverPort);
+    sprintf(serverPortStr,"%d",comand.getDestPort());
     message.append(serverPortStr);
     message.append("|");
 
-    message.append(cliente->host);
+    message.append(comand.getSourceHost());
     message.append("|");
 
     char* portStr = new char();
-    sprintf(portStr,"%d",cliente->port);
+    sprintf(portStr,"%d",comand.getSourcePort());
     message.append(portStr);
     message.append("|");
 
-    char* seqStr = new char();;
-    sprintf(seqStr,"%d",variablesGlobales->getSeqNumber());
+    char* seqStr = new char();
+    sprintf(seqStr,"%d",comand.getNumSeq());
     message.append(seqStr);
 
     message.append("|");
-    message.append("0</head><data>LOGOUT");
-    message.append("<CR></data>");
+    message.append("1</head><data><CR></data>");
 
-    /** ENVIAR MENSAJE AL MULTICAST **/
+    const char *msj = message.c_str();
+
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
+
+    message = "<head>";
+    message.append(comand.getSourceHost());
+    message.append("|");
+
+    serverPortStr = new char();
+    sprintf(serverPortStr,"%d",comand.getSourcePort());
+    message.append(serverPortStr);
+    message.append("|");
+
+    message.append(comand.getDestHost());
+    message.append("|");
+
+    portStr = new char();
+    sprintf(portStr,"%d",comand.getDestPort());
+    message.append(portStr);
+    message.append("|");
+
+    seqStr = new char();
+    sprintf(seqStr,"%d",comand.getNumSeq());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("0</head><data>GOODBYE<CR></data>");
+
+    msj = message.c_str();
+
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&multicastDir , sizeof(multicastDir));
+
+
     /** Hay que quedar esperando el ACK de todos **/
     variablesGlobales->changeSeqNumber();
 }
 
+
 void accionesLogin(int socketServidorAtiendeLogin, Comando comand, struct sockaddr_in clienteDireccion){
+    //arma y manda ack si no es duplicado crea nuevo usuario
+    string message = "<head>";
+    message.append(comand.getDestHost());
+    message.append("|");
 
-    /*char* str = "<head>";
-    strcat (str, comand.getSourceHost());
-    strcat (str,"|");
-    strcat (str,comand.getSourcePort());
-    strcat (str,"|");
-    strcat (str,comand.getDestHost());
-    strcat (str,"|");
-    strcat (str,comand.getDestPort());
-    strcat (str,"|");
-    strcat (str,comand.getNumSeq());
-    strcat (str,"|");
-    strcat (str,"1");
-    strcat (str,"</head><data></data>");
-    cout << "dfchgj";*/
+    char* serverPortStr = new char();
+    sprintf(serverPortStr,"%d",comand.getDestPort());
+    message.append(serverPortStr);
+    message.append("|");
+
+    message.append(comand.getSourceHost());
+    message.append("|");
+
+    char* portStr = new char();
+    sprintf(portStr,"%d",comand.getSourcePort());
+    message.append(portStr);
+    message.append("|");
+
+    char* seqStr = new char();
+    sprintf(seqStr,"%d",comand.getNumSeq());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("1</head><data><CR></data>");
+
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-    //cout << comand.getSourceHost() << endl;cout << "gfhhj" << endl;
-    //cout << atoi(comand.getSourcePort());cout << "gfhhj" << endl;
-    //cout << comand.getusuario();cout << "gfhhj" << endl;
-    //variablesGlobales->nuevoUsuario(comand.getSourceHost(),atoi(comand.getSourcePort()),comand.getusuario());
+    cout << comand.getSourceHost() << endl;
+    cout << comand.getSourcePort()<< endl;
+    cout << comand.getusuario()<< endl;
 
+    //si ya existe solo mandarle ack
+    //if (verificarSeq(comando))
+        //variablesGlobales->nuevoUsuario(comand.getSourceHost(),comand.getSourcePort(),comand.getusuario());
 
-
-    char* msj = "<head>2|3|4|5|0|1</head><data></data>";
-    sendto(socketServidorAtiendeLogin, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion) );
+    const char *msj = message.c_str();
+    sendto(socketServidorAtiendeLogin, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
 
 };
 
@@ -291,6 +337,15 @@ int main()
     int socketServidorAtiendeLogin;
     struct sockaddr_in myDireccion;
     struct sockaddr_in clienteDireccion;
+    struct sockaddr_in multicasDir;
+
+    int socketParaMulticast = socket(PF_INET,SOCK_DGRAM, 0);
+    if(socketServidorAtiendeLogin == -1)
+      cout << "No puedo inicializar el socket";
+
+     multicasDir.sin_family=PF_INET;
+     inet_aton(HELLO_GROUP, &multicasDir.sin_addr);
+     multicasDir.sin_port=htons(HELLO_PORT);
 
     socketServidorAtiendeLogin = socket(PF_INET,SOCK_DGRAM, 0);
     if(socketServidorAtiendeLogin == -1)
@@ -301,11 +356,10 @@ int main()
     myDireccion.sin_addr.s_addr = htonl(INADDR_ANY); //ip en la que escucha INADDR_ANY significa cualquiera
 
 
-
     if( bind( socketServidorAtiendeLogin, (struct sockaddr*)&myDireccion, sizeof(myDireccion)) == -1 )
       cout << "No Puede Hacer Bind" << endl;
 
-    cout << "Hello world!" << endl;
+    cout << "Estoy VIVO" << endl;
     int codigoSalida = 0;
     bool salir = false;
     int hijoPid;
@@ -339,9 +393,13 @@ int main()
 
     socklen_t len = sizeof clienteDireccion;
 
+     while(!salir){
 
     //FD_ZERO(&socketsActuales);
     //FD_SET(socketServidorAtiendeLogin, &socketsActuales);
+
+    memset (buffer,NULL,BUFFERSIZE);//vacio buffer
+
 
     recvfrom(socketServidorAtiendeLogin, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&clienteDireccion, &len);
     cout << "mensaje recibido"<< endl;
@@ -360,24 +418,28 @@ int main()
 
         break;
 
-        case LOGOUT:
+        case LOGOUT:{
         cout << "llego logout"<< endl;
-        //accionesLogout(socketServidorAtiendeLogin,comando,clienteDireccion);
+        logout(socketParaMulticast,comando,clienteDireccion,multicasDir);
+        }
         break;
 
-        case GET_CONNECTED:
+        case GET_CONNECTED:{
         cout << "llego get connected"<< endl;
         //accionesGetConnected();
+        }
         break;
 
-        case MESSAGE:
+        case MESSAGE:{
         cout << "llego message"<< endl;
         //accionesMessage();
+        }
         break;
 
-        case PRIVATE_MESSAGE:
+        case PRIVATE_MESSAGE:{
         cout << "llego private message"<< endl;
         //accionesPrivateMessage();
+        }
         break;
 
         default:
@@ -385,21 +447,13 @@ int main()
         break;
 
     }
-    //comando.
-    //clienteDireccion.sin_port = htons();
-
-     //if(sendto(socketServidorAtiendeLogin, buffer, strlen(buffer)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion) ) == -1)
-        //cout << "No Puede mandar msj";
 
 
-    while(!salir){
         hijoPid=waitpid(-1, &pidEstado, WNOHANG);
         if (hijoPid>0)
           {
             if(WIFEXITED(pidEstado) == 1)
-                salir = true;// un hijo menos
-            // TODO podemos usar los codigos de salida para matar al servidor o los comandos
-            //bajar la bandera servidorArriba, etc
+                salir = true;
           }
       }
 

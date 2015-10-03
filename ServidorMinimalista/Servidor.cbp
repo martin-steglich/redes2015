@@ -35,7 +35,9 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Unit filename="include/Cliente.h" />
+		<Unit filename="include/ParserComandos.h" />
 		<Unit filename="include/VariablesGlobales.h" />
+		<Unit filename="include/mutex.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/Cliente.cpp" />
 		<Unit filename="src/ParserComandos.cpp" />

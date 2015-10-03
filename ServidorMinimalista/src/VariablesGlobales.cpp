@@ -1,7 +1,9 @@
 #include "VariablesGlobales.h"
 #include <stdexcept>
 #include<string>
-
+#include <iostream>
+#include <cstdlib>
+using namespace std;
 //#define synchronized(M)  for(Lock M##_lock = M; M##_lock; M##_lock.setUnlock())
 
 VariablesGlobales* VariablesGlobales::instance = NULL;
@@ -50,7 +52,9 @@ unsigned int VariablesGlobales::getSeqNumber(){
 void VariablesGlobales::nuevoUsuario(string host, int port, string nick){
 
     if(!(existeCliente(nick))){
+
         Cliente* cliente;
+
         cliente->host = host;
         cliente->port = port;
         cliente->nick = nick;
