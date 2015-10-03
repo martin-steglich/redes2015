@@ -80,6 +80,8 @@ public class Cliente {
 
     public synchronized void setConnected(boolean connected) {
         this.connected = connected;
+        messages = new ArrayList<>();
+        messagesToSend = new ArrayList<>();
     }
 
     public synchronized String getServerHost() {
@@ -114,8 +116,8 @@ public class Cliente {
         String logoutMessage = "LOGOUT<CR>";
         messagesToSend.add(logoutMessage);
         
-        messages = new ArrayList<>();
-        messagesToSend = new ArrayList<>();
+        /*messages = new ArrayList<>();
+        messagesToSend = new ArrayList<>();*/
         
         //TODO manejar en los threads si el mensaje es de logout, 
         //setear connect en false

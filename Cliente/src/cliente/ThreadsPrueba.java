@@ -155,12 +155,12 @@ public class ThreadsPrueba implements Runnable {
                             }
 
                             String msg = messages.get(0);                           
-
+                            
                             //Obtengo los datos del servidor
                             String serverHost = chat.getCliente().getServerHost();
                             Integer serverPort = chat.getCliente().getServerPort();
                             InetAddress ip = InetAddress.getByName(serverHost);
-
+                                
                             String host = chat.getCliente().getHost();
                             Integer port = chat.getCliente().getPort();
                             //Le agrego el encabezado al mensaje a enviar
