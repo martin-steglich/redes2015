@@ -67,7 +67,7 @@
 	<stdexcept>
 	<string>
 
-1443909082 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
+1443909877 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
 	<iostream>
 	<cstdlib>
 	"ParserComandos.h"
@@ -170,7 +170,7 @@
 	<iostream>
 	<cstdlib>
 
-1443908765 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/ParserComandos.cpp
+1443909400 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/ParserComandos.cpp
 	"ParserComandos.h"
 	<stdio.h>
 	<iostream>

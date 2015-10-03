@@ -73,27 +73,21 @@
     cout << pch << endl;
     pch = strtok (NULL, "|");//agarro hasta Pipe
     char* sourceHost =  pch;
-    //strcpy(sourceHost,pch);
-    cout << sourceHost << endl;
     pch = strtok (NULL, "|");
     unsigned int sourcePort =  atoi(pch);
-    cout << sourcePort << endl;
     pch = strtok (NULL, "|");
     char * destHost =  pch;
     pch = strtok (NULL, "|");
     unsigned int destPort =  atoi(pch);
-    cout << destPort << endl;
     pch = strtok (NULL, "|");
     unsigned int numSeq =  atoi(pch);
     pch = strtok (NULL, "<");
     bool isAck =  pch;
-    cout << numSeq << endl;
     pch = strtok (NULL, ">");// saco /head
     pch = strtok (NULL, ">");//saco data
     pch = strtok (NULL, "<");//agarro todo los datos
 
     char * tipo = strtok(pch, " <");//agarro el comando
-    cout << tipo << endl;
 
     if (strcmp(tipo,"LOGIN") == 0){
 
