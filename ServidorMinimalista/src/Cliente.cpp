@@ -23,7 +23,9 @@ time_t Cliente::getActiveTime()const{
     return activeTime;
 }
 
-
+unsigned int Cliente::getSequenceNumber(){
+    return sequenceNumber;
+}
 
 
 Cliente::~Cliente()

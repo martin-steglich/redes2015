@@ -14,6 +14,7 @@ class Cliente
         string getHost()const;
         unsigned int getPort()const;
         string getNick()const;
+        unsigned int getSequenceNumber();
         time_t getActiveTime()const;
 
         virtual ~Cliente();
@@ -22,6 +23,7 @@ class Cliente
         string host;
         unsigned int port;
         string nick;
+        unsigned int sequenceNumber;
         time_t activeTime;
 
 

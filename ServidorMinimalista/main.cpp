@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include <errno.h>
 #include <stdio.h>
 #include <netinet/in.h>
@@ -57,7 +58,7 @@ using namespace std;
 
 int comandosConsola(){
     string command;
-    bool exit = exit;
+    bool exit = false;
 
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
@@ -68,7 +69,8 @@ int comandosConsola(){
         if(command.compare("exit") == 0)
             exit = true;
         else if(command.compare("a") == 0)
-            cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados();
+            cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados() << endl;
+
 
         else if(command.compare("s") == 0)
             cout << "Cantidad mensajes enviados" << endl;
@@ -80,12 +82,171 @@ int comandosConsola(){
             time_t serverTime;
             time(&serverTime);
             double seconds = difftime(serverTime, activeTime);
-            printf ("El servidor se encuentra activo hace %.f segundos", seconds);
+            printf ("El servidor se encuentra activo hace %.f segundos\n", seconds);
         }
+        cout<< endl;
     }
 
     return 1;
 }
+//puerto y host corresponden al receptor (el que pidio los conectados)
+void getConnected(int puerto, string host, int serverPort, string serverHost){
+    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+
+    set<string> users = variablesGlobales->getConectados();
+    Cliente* cliente = variablesGlobales->buscarCliente(host, puerto);
+    string message = "<head>";
+    message.append(serverHost);
+    message.append("|");
+
+    char* serverPortStr = new char();
+    sprintf(serverPortStr,"%d",serverPort);
+    message.append(serverPortStr);
+    message.append("|");
+
+    message.append(host);
+    message.append("|");
+
+    char* portStr = new char();;
+    sprintf(portStr,"%d",puerto);
+    message.append(portStr);
+    message.append("|");
+
+    char* seqStr = new char();;
+    sprintf(seqStr,"%d",variablesGlobales->getSeqNumber());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("0</head><data>CONNECTED ");
+
+    for (set<string>::iterator it = users.begin(); it != users.end(); ++it){
+        if(it != users.begin())
+            message.append(" |");
+
+        string actual = *it;
+        message.append(actual);
+    }
+    message.append("<CR></data>");
+
+    /** ENVIAR MENSAJE AL MULTICAST **/
+    /** Hay que quedar esperando el ACK de todos **/
+    variablesGlobales->changeSeqNumber();
+}
+
+//puerto y host corresponden al emisor del mensaje (es para obtener el nick)
+void relayedMessage(int puerto, string host, int serverPort, string serverHost, string msg){
+    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+
+    Cliente* cliente = variablesGlobales->buscarCliente(host, puerto);
+
+    string message = "<head>";
+    message.append(serverHost);
+    message.append("|");
+
+    char* serverPortStr = new char();
+    sprintf(serverPortStr,"%d",serverPort);
+    message.append(serverPortStr);
+    message.append("|");
+    message.append("0");
+    message.append("|");
+    message.append("0");
+    message.append("|");
+
+    char* seqStr = new char();
+    sprintf(seqStr,"%d",variablesGlobales->getSeqNumber());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("0</head><data>RELAYED_MESSAGE ");
+    message.append(cliente->nick);
+    message.append(" ");
+    message.append(msg);
+    message.append("<CR></data>");
+
+    /** ENVIAR MENSAJE AL MULTICAST **/
+    /** Hay que quedar esperando el ACK de todos **/
+    variablesGlobales->changeSeqNumber();
+
+}
+
+//puerto y host corresponden al emisor del mensaje (es para obtener el nick)
+//nick corresponde al nick del receptor (es para obtener el puerto y host de envio)
+void privateMessage(int puerto, string host, int serverPort, string serverHost, string nick, string msg){
+    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+
+    Cliente* emisor = variablesGlobales->buscarCliente(host, puerto);
+    Cliente* receptor = variablesGlobales->buscarCliente(nick);
+
+    string message = "<head>";
+    message.append(serverHost);
+    message.append("|");
+
+    char* serverPortStr = new char();
+    sprintf(serverPortStr,"%d",serverPort);
+    message.append(serverPortStr);
+    message.append("|");
+
+    message.append(receptor->host);
+    message.append("|");
+
+    char* portStr = new char();
+    sprintf(portStr,"%d",receptor->port);
+    message.append(portStr);
+    message.append("|");
+
+    char* seqStr = new char();;
+    sprintf(seqStr,"%d",variablesGlobales->getSeqNumber());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("0</head><data>PRIVATE_MESSAGE ");
+    message.append(emisor->nick);
+    message.append(" ");
+    message.append(msg);
+    message.append("<CR></data>");
+
+    /** ENVIAR MENSAJE AL MULTICAST **/
+    /** Hay que quedar esperando el ACK de todos **/
+    variablesGlobales->changeSeqNumber();
+
+}
+//puerto y host corresponden al emisor del mensaje (es para borrarlo de los conectados)
+void logout(int puerto, string host, int serverPort, string serverHost){
+    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+
+    Cliente* cliente = variablesGlobales->buscarCliente(host, puerto);
+    variablesGlobales->finConexion(host,puerto);
+
+    string message = "<head>";
+    message.append(serverHost);
+    message.append("|");
+
+    char* serverPortStr = new char();
+    sprintf(serverPortStr,"%d",serverPort);
+    message.append(serverPortStr);
+    message.append("|");
+
+    message.append(cliente->host);
+    message.append("|");
+
+    char* portStr = new char();
+    sprintf(portStr,"%d",cliente->port);
+    message.append(portStr);
+    message.append("|");
+
+    char* seqStr = new char();;
+    sprintf(seqStr,"%d",variablesGlobales->getSeqNumber());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("0</head><data>LOGOUT");
+    message.append("<CR></data>");
+
+    /** ENVIAR MENSAJE AL MULTICAST **/
+    /** Hay que quedar esperando el ACK de todos **/
+    variablesGlobales->changeSeqNumber();
+}
+
 
 int main()
 {
@@ -165,7 +326,7 @@ int main()
     close(socketServidorAtiendeLogin);*/
     while(!salir){
 
-        variablesGlobales->nuevoUsuario();
+        //variablesGlobales->nuevoUsuario();
         hijoPid=waitpid(-1, &pidEstado, WNOHANG);
         if (hijoPid>0)
           {

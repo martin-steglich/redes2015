@@ -8,6 +8,7 @@ VariablesGlobales* VariablesGlobales::instance = NULL;
 int VariablesGlobales::cantConectados = 0;
 int VariablesGlobales::cantMensajesEnviados = 0;
 int VariablesGlobales::cantConexionesTotales = 0;
+unsigned int seqNumber = 0;
 time_t VariablesGlobales::activeTime;
 
 
@@ -34,9 +35,43 @@ int VariablesGlobales::getCantConexionesTotales()const{
     return VariablesGlobales::cantConexionesTotales;
 }
 
-void VariablesGlobales::nuevoUsuario(){
+void VariablesGlobales::changeSeqNumber(){
+    if(seqNumber == 1)
+        seqNumber = 0;
+    else
+        seqNumber = 1;
 
-    VariablesGlobales::cantConectados++;
+}
+
+unsigned int VariablesGlobales::getSeqNumber(){
+    return seqNumber;
+}
+
+void VariablesGlobales::nuevoUsuario(string host, int port, string nick){
+
+    if(!(existeCliente(nick))){
+        Cliente* cliente;
+        cliente->host = host;
+        cliente->port = port;
+        cliente->nick = nick;
+        time(&cliente->activeTime);
+        cliente->senderSeq = 0;
+
+
+
+        conectados.insert(cliente);
+
+        VariablesGlobales::cantConectados++;
+    }
+}
+
+void VariablesGlobales::finConexion(string host, unsigned int port){
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if((actual->host == host) && (actual->port == port)){
+            conectados.erase(it);
+        }
+    }
 }
 
 void VariablesGlobales::nuevoMensaje(){
@@ -56,7 +91,7 @@ set<string> VariablesGlobales::getConectados(){
 
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
         Cliente* actual = *it;
-        string nick = actual->getNick();
+        string nick = actual->nick;
         connected.insert(nick);
     }
     return connected;
@@ -66,9 +101,32 @@ Cliente* VariablesGlobales::buscarCliente(string nick){
 
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
         Cliente* actual = *it;
-        if(actual->getNick() == nick){
+        if(actual->nick == nick){
+            return actual;
+        }
+    }
+
+    return NULL;
+}
+
+Cliente* VariablesGlobales::buscarCliente(string host, unsigned int port){
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if((actual->host == host) && (actual->port == port)){
             return actual;
         }
     }
     return NULL;
+
+}
+
+bool VariablesGlobales::existeCliente(string nick){
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if(actual->nick == nick){
+            return true;
+        }
+    }
+
+    return false;
 }
