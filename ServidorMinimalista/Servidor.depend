@@ -112,3 +112,65 @@
 	<string>
 	<time.h>
 
+1443810486 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/Cliente.cpp
+	"Cliente.h"
+
+1443810486 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/Cliente.h
+	<string>
+	<time.h>
+
+1443831938 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/main.cpp
+	<iostream>
+	<cstdlib>
+	"HiloAtiende.h"
+	"ParserComandos.h"
+	<iostream>
+	<string>
+	<fcntl.h>
+	<string.h>
+	<stdlib.h>
+	<errno.h>
+	<stdio.h>
+	<netinet/in.h>
+	<resolv.h>
+	<sys/socket.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<arpa/inet.h>
+	<unistd.h>
+	<pthread.h>
+	<time.h>
+	<stdio.h>
+	<stdlib.h>
+	"VariablesGlobales.h"
+
+1443826912 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/ParserComandos.h
+
+1443810486 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/VariablesGlobales.h
+	"Cliente.h"
+	<set>
+	<time.h>
+
+1443810486 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/lock.cpp
+
+1443810486 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/mutex.cpp
+	"mutex.h"
+
+1443810486 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/mutex.h
+
+1443827092 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/ParserComandos.cpp
+	"ParserComandos.h"
+	<stdio.h>
+	<iostream>
+	<cstdlib>
+	<string.h>
+	<exception>
+
+1443810486 source:/ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
+	"VariablesGlobales.h"
+	<stdexcept>
+	<string>
+
+1443832003 /ens/home01/b/bruno.amaral/redes2015/ServidorMinimalista/include/HiloAtiende.h
+	"ParserComandos.h"
+

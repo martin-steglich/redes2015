@@ -1,9 +1,9 @@
 #include <iostream>
 #include <cstdlib>
 //#include "Cliente.h"
-//#include "HiloAtiende.h"
+#include "HiloAtiende.h"
 //#include "Errores.h"
-//#include "ParserComandos.h"
+#include "ParserComandos.h"
 #include <iostream>
 #include <string>
 #include <fcntl.h>
@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 
 #include "VariablesGlobales.h"
@@ -87,8 +89,53 @@ int comandosConsola(){
     return 1;
 }
 
+
+void accionesLogin(int socketServidorAtiendeLogin, Comando comand, struct sockaddr_in clienteDireccion){
+
+    /*char* str = "<head>";
+    strcat (str, comand.getSourceHost());
+    strcat (str,"|");
+    strcat (str,comand.getSourcePort());
+    strcat (str,"|");
+    strcat (str,comand.getDestHost());
+    strcat (str,"|");
+    strcat (str,comand.getDestPort());
+    strcat (str,"|");
+    strcat (str,comand.getNumSeq());
+    strcat (str,"|");
+    strcat (str,"1");
+    strcat (str,"</head><data></data>");
+    cout << "dfchgj";*/
+    char* msj = "<head>2|3|4|5|0|1</head><data></data>";
+    sendto(socketServidorAtiendeLogin, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion) );
+
+};
+
+
+
 int main()
 {
+
+    char buffer[BUFFERSIZE]; //donde se guardan msj
+
+    int socketServidorAtiendeLogin;
+    struct sockaddr_in myDireccion;
+    struct sockaddr_in clienteDireccion;
+
+    socketServidorAtiendeLogin = socket(PF_INET,SOCK_DGRAM, 0);
+    if(socketServidorAtiendeLogin == -1)
+      cout << "No puedo inicializar el socket";
+
+    myDireccion.sin_family = PF_INET ; //indica el dominio de comunicacion a utilizar
+    myDireccion.sin_port = htons(PORT); //puerto htons transforma el int a una ip
+    myDireccion.sin_addr.s_addr = htonl(INADDR_ANY); //ip en la que escucha INADDR_ANY significa cualquiera
+
+    int contador = 0;
+
+
+    if( bind( socketServidorAtiendeLogin, (struct sockaddr*)&myDireccion, sizeof(myDireccion)) == -1 )
+      cout << "No Puede Hacer Bind" << endl;
+
     cout << "Hello world!" << endl;
     int codigoSalida = 0;
     bool salir = false;
@@ -110,40 +157,20 @@ int main()
             exit(EXIT_SUCCESS);
          else
             exit(EXIT_FAILURE);// Código de salida
+        break;
 
        default:  //Es el proceso padre
-
          break;
     }
 
-    /*char buffer[BUFFERSIZE];
-    fd_set socketsActuales;
+    while(!salir){
 
-    int socketServidorAtiendeLogin;
-    struct sockaddr_in myDireccion;
-    struct sockaddr_in clienteDireccion;
-
-    socketServidorAtiendeLogin = socket(PF_INET,SOCK_DGRAM, 0);
-    if(socketServidorAtiendeLogin == -1)
-      cout << "No puedo inicializar el socket";
-
-    myDireccion.sin_family = PF_INET ; //indica el dominio de comunicacion a utilizar
-    myDireccion.sin_port = htons(PORT); //puerto htons transforma el int a una ip
-    myDireccion.sin_addr.s_addr = htonl(INADDR_ANY); //ip en la que escucha INADDR_ANY significa cualquiera
-
-    int contador = 0;
-
-
-    if( bind( socketServidorAtiendeLogin, (struct sockaddr*)&myDireccion, sizeof(myDireccion)) == -1 )
-      cout << "No Puede Hacer Bind" << endl;
-
-    while ( contador < 2 ){
 
     socklen_t len = sizeof clienteDireccion;
 
 
-    FD_ZERO(&socketsActuales);
-    FD_SET(socketServidorAtiendeLogin, &socketsActuales);
+    //FD_ZERO(&socketsActuales);
+    //FD_SET(socketServidorAtiendeLogin, &socketsActuales);
 
     recvfrom(socketServidorAtiendeLogin, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&clienteDireccion, &len);
     cout << "mensaje recibido"<< endl;
@@ -151,19 +178,68 @@ int main()
     cout << clienteDireccion.sin_port << endl;
     cout << buffer << endl;
 
-    clienteDireccion.sin_port = htons(40291);
-    cout << clienteDireccion.sin_port << endl;
-     if(sendto(socketServidorAtiendeLogin, buffer, strlen(buffer)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion) ) == -1)
-        cout << "No Puede mandar msj";
+    Comando comando = comandoParsear(buffer);
 
-   cout << clienteDireccion.sin_port << endl;
+    switch ( comando.getTipo()) {
 
+        case LOGIN:{
+        cout << "llego LOGIN "<< endl;
+        accionesLogin(socketServidorAtiendeLogin,comando,clienteDireccion);
+        //Cliente cli = new Cliente(string host, unsigned int port, string nick, time_t activeTime);)
+        /*switch ( hijoPid=fork() ){ //creo hijo con fork
 
-       contador++;
+        case -1:  // Error
+         cout << "ERROR" << endl;
+         salir = true;
+         break;
+
+       case 0:   // Este es el proceso hijo
+         codigoSalida = HiloAtiendeCliente(comando, clienteDireccion);
+
+         if (codigoSalida == 1)
+            exit(EXIT_SUCCESS);
+         else
+            exit(EXIT_FAILURE);// Código de salida
+        break;
+
+       default:  //Es el proceso padre
+         break;
+        }*/
+        }
+
+        break;
+
+        case LOGOUT:
+        cout << "llego logout"<< endl;
+        //accionesLogout(socketServidorAtiendeLogin,comando,clienteDireccion);
+        break;
+
+        case GET_CONNECTED:
+        cout << "llego get connected"<< endl;
+        //accionesGetConnected();
+        break;
+
+        case MESSAGE:
+        cout << "llego message"<< endl;
+        //accionesMessage();
+        break;
+
+        case PRIVATE_MESSAGE:
+        cout << "llego private message"<< endl;
+        //accionesPrivateMessage();
+        break;
+
+        default:
+        cout << "error al parsear"<< endl;
+        break;
+
     }
+    //comando.
+    //clienteDireccion.sin_port = htons();
 
-    close(socketServidorAtiendeLogin);*/
-    while(!salir){
+     //if(sendto(socketServidorAtiendeLogin, buffer, strlen(buffer)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion) ) == -1)
+        //cout << "No Puede mandar msj";
+
 
         variablesGlobales->nuevoUsuario();
         hijoPid=waitpid(-1, &pidEstado, WNOHANG);
@@ -175,6 +251,9 @@ int main()
             //bajar la bandera servidorArriba, etc
           }
       }
+
+    close(socketServidorAtiendeLogin);
+
     return 0;
 }
 

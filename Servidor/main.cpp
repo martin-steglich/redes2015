@@ -83,7 +83,7 @@ int main(int argv, char** argc){
     myDireccion.sin_family = PF_INET ; //indica el dominio de comunicacion a utilizar 
     myDireccion.sin_port = htons(PORT); //puerto htons transforma el int a una ip
     myDireccion.sin_addr.s_addr = htonl(INADDR_ANY); //ip en la que escucha INADDR_ANY significa cualquiera
-    socklen_t tamañoDireccion = sizeof(struct sockaddr_in);
+    socklen_t tamañoDireccion = sizeof(sockaddr_in);
 
     //asocia socket con puerto --bind(socket ya creado, puntero a estructura casteado, tamaño estructura)
     if( bind( socketServidorAtiendeLogin, (struct sockaddr*)&myDireccion, sizeof(myDireccion)) == -1 )
@@ -99,7 +99,7 @@ int main(int argv, char** argc){
     //select() bloquea el proceso hasta que: un cliente se conecte, desconecte o mande un msj para UDP solo corre lo primero
     if (select(socketServidorAtiendeLogin+1, &socketsActuales, NULL, NULL, NULL)) //controlar error con -1
       {
-        tamañoMsjRec = recvfrom(socketServidorAtiendeLogin, *buffer , BUFFERSIZE , 0, (struct sockaddr*)&clienteDireccion , tamañoDireccion ); //recivimos msj
+        tamañoMsjRec = recvfrom(socketServidorAtiendeLogin, *buffer , BUFFERSIZE , 0, (struct sockaddr*)&clienteDireccion , tamañoDireccion ); //recibimos msj
         comando = comandoParsear(*buffer);// TODO parsear entrada y devolver estructura con los datos obtenidos para reconocer accion deberia llegar solo login
         if ( comando.getTipo() == LOGIN ){
            switch ( hijoPid=fork() ){ //creo hijo con fork
