@@ -29,6 +29,7 @@ public class Cliente {
         messages = new ArrayList<>();
         messagesToSend = new ArrayList<>();
         connected = false;
+        port = null;
     }
     
     
@@ -101,17 +102,14 @@ public class Cliente {
     
     
     
-    public synchronized boolean connect(){
-        connected = true;
+    public synchronized void connect(){
         String loginMessage = "LOGIN " + nick + "<CR>";
         messagesToSend.add(loginMessage);
-        return connected;
         //TODO manejar en los threads si el mensaje es de login, 
         //setear connect en true
     }
     
-    public synchronized boolean disconnect(){
-        connected = false;
+    public synchronized void disconnect(){
         
         String logoutMessage = "LOGOUT<CR>";
         messagesToSend.add(logoutMessage);
@@ -119,7 +117,6 @@ public class Cliente {
         messages = new ArrayList<>();
         messagesToSend = new ArrayList<>();
         
-        return !connected;
         //TODO manejar en los threads si el mensaje es de logout, 
         //setear connect en false
     }
@@ -135,7 +132,7 @@ public class Cliente {
     }
     
     public synchronized void getConnected(){
-        String msg = "GET_CONNECTED<CR";
+        String msg = "GET_CONNECTED<CR>";
         messagesToSend.add(msg);
     }
     
