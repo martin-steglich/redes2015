@@ -89,7 +89,7 @@ public class ThreadsPrueba implements Runnable {
     public boolean isACK(String receivedMessage){
         String[] split = receivedMessage.split("</head>")[0].split("\\|");
         int isACK = Integer.parseInt(split[5]);
-        return (isACK == 1) ? true : false;
+        return (isACK == 1);
     }
     
     public String getMessage(String message){
@@ -212,7 +212,6 @@ public class ThreadsPrueba implements Runnable {
                            socket.close();
                            chat.getCliente().getMessagesToSend().remove(0);
                            if(!received){
-                               //String errorMessage = "Falló el envío del mensaje luego de 3 intentos. \n";
                                String errorMessage = "Servidor no disponible en el host/puerto especificados";
 
                                chat.showErrorMessage(errorMessage);
@@ -285,7 +284,6 @@ public class ThreadsPrueba implements Runnable {
                     }break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 if((socket != null)&&(socket.isConnected())&&(!socket.isClosed())){
                    socket.close();
                 }
