@@ -1,14 +1,33 @@
 #ifndef MUTEX_H
 #define MUTEX_H
+#include <pthread.h>
 
 
-class mutex
+class Mutex
 {
+    pthread_mutex_t mtx;
+
     public:
-        mutex();
-        virtual ~mutex();
-    protected:
-    private:
+        Mutex() {
+        pthread_mutex_init(&mtx, NULL);
+    }
+
+    int lock() {
+        return  pthread_mutex_lock(&mtx);
+    }
+
+    int trylock() {
+        return  pthread_mutex_lock(&mtx);
+    }
+
+    int unlock() {
+        return  pthread_mutex_unlock(&mtx);
+    }
+
+    virtual ~Mutex() {
+        pthread_mutex_destroy(&mtx);
+    }
+
 };
 
 #endif // MUTEX_H

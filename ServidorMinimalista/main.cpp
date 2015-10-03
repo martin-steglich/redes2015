@@ -20,6 +20,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <mutex.h>
 #include <time.h>
 
 
@@ -46,7 +47,6 @@
 using namespace std;
 
 
-
 //Puerto
 #define PORT 54321
 
@@ -56,13 +56,13 @@ using namespace std;
 //Longitud del buffer
 #define BUFFERSIZE 512 // poner el de los datagramas
 
-int comandosConsola(){
+int comandosConsola(Mutex &mtx){
     string command;
     bool exit = false;
-
+    mtx.lock();
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+    mtx.unlock();
 
-    //Mutex mutex;
     while (!exit){
         cin >> command;
 
@@ -71,13 +71,19 @@ int comandosConsola(){
         else if(command.compare("a") == 0)
             cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados() << endl;
 
-
+        else if(command.compare("a") == 0){
+                mtx.lock();
+                cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados();
+                mtx.unlock();
+        }
         else if(command.compare("s") == 0)
             cout << "Cantidad mensajes enviados" << endl;
         else if(command.compare("d") == 0)
             cout << "Cantidad conexiones totales" << endl;
         else if(command.compare("f") == 0){
+            mtx.lock();
             time_t activeTime = variablesGlobales->getActiveTime();
+            mtx.unlock();
 
             time_t serverTime;
             time(&serverTime);
@@ -94,7 +100,7 @@ void getConnected(int puerto, string host, int serverPort, string serverHost){
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
     set<string> users = variablesGlobales->getConectados();
-    Cliente* cliente = variablesGlobales->buscarCliente(host, puerto);
+
     string message = "<head>";
     message.append(serverHost);
     message.append("|");
@@ -255,7 +261,12 @@ int main()
     bool salir = false;
     int hijoPid;
     int pidEstado;
+    Mutex mtx = Mutex();
+
+
+    mtx.lock();
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+    mtx.unlock();
 
     switch ( hijoPid=fork() ){ //creo hijo con fork
 
@@ -265,7 +276,7 @@ int main()
          break;
 
        case 0:   // Este es el proceso hijo
-         codigoSalida = comandosConsola();
+         codigoSalida = comandosConsola(mtx);
 
          if (codigoSalida == 1)
             exit(EXIT_SUCCESS);
@@ -325,8 +336,6 @@ int main()
 
     close(socketServidorAtiendeLogin);*/
     while(!salir){
-
-        //variablesGlobales->nuevoUsuario();
         hijoPid=waitpid(-1, &pidEstado, WNOHANG);
         if (hijoPid>0)
           {
