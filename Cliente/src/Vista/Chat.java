@@ -28,6 +28,7 @@ public class Chat extends javax.swing.JFrame {
         chatList = new ArrayList<>();
         chatArea.setOpaque(false);
         infoPanel.setVisible(true);
+        privateCheckbox.setSelected(false);
         semaphore = 1;
         cliente = new Cliente();
     }
@@ -71,6 +72,7 @@ public class Chat extends javax.swing.JFrame {
         chatArea.setOpaque(false);
         messageField.setText("");
         privateCheckbox.setEnabled(false);
+        privateCheckbox.setSelected(false);
         //infoPanel.setVisible(true);
     }
     
@@ -375,7 +377,7 @@ public class Chat extends javax.swing.JFrame {
     }//GEN-LAST:event_privateCheckboxStateChanged
 
     private void disconnectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectButtonActionPerformed
-        boolean disconnected = false;
+
         cliente.disconnect();
     }//GEN-LAST:event_disconnectButtonActionPerformed
 

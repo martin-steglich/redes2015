@@ -60,22 +60,20 @@ int comandosConsola(Mutex &mtx){
 
     string command;
     bool exit = false;
-    mtx.lock();
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-    mtx.unlock();
+
 
     while (!exit){
         cin >> command;
 
         if(command.compare("exit") == 0)
             exit = true;
-        else if(command.compare("a") == 0)
-            cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados() << endl;
-
         else if(command.compare("a") == 0){
                 mtx.lock();
-                cout << "La cantidad clientes es: " << variablesGlobales->getCantConectados();
+                VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+                set<string> users = variablesGlobales->getConectados();
                 mtx.unlock();
+                cout << "La cantidad clientes es: " << users.size();
+
         }
         else if(command.compare("s") == 0)
             cout << "Cantidad mensajes enviados" << endl;
@@ -83,6 +81,7 @@ int comandosConsola(Mutex &mtx){
             cout << "Cantidad conexiones totales" << endl;
         else if(command.compare("f") == 0){
             mtx.lock();
+            VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
             time_t activeTime = variablesGlobales->getActiveTime();
             mtx.unlock();
 
@@ -219,69 +218,68 @@ void privateMessage(int puerto, string host, int serverPort, string serverHost, 
 
 }
 //puerto y host corresponden al emisor del mensaje (es para borrarlo de los conectados)
-void logout(int socket, Comando comand, struct sockaddr_in clienteDireccion, struct sockaddr_in multicastDir){
+void logout(char* serverHost, char* host, int socket, Comando comand, struct sockaddr_in clienteDireccion, struct sockaddr_in multicastDir){
 
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
     //Cliente* cliente = variablesGlobales->buscarCliente(comand.getSourceHost(), comand.getSourcePort());
     //variablesGlobales->finConexion(comand.getSourceHost(), comand.getSourcePort());
 
-    //ACK para el que abandona debe ser Bolso
-    string message = "<head>";
-    message.append(comand.getDestHost());
-    message.append("|");
+    //ACK para el que abandona
+    char message[256];
+    strcpy(message,"<head>");
+    strcat(message,serverHost);
+    strcat(message,"|");
 
     char* serverPortStr = new char();
     sprintf(serverPortStr,"%d",comand.getDestPort());
-    message.append(serverPortStr);
-    message.append("|");
+    strcat(message,serverPortStr);
+    strcat(message,"|");
 
-    message.append(comand.getSourceHost());
-    message.append("|");
+    strcat(message,host);
+    strcat(message,"|");
 
     char* portStr = new char();
     sprintf(portStr,"%d",comand.getSourcePort());
-    message.append(portStr);
-    message.append("|");
+    strcat(message,portStr);
+    strcat(message,"|");
 
     char* seqStr = new char();
     sprintf(seqStr,"%d",comand.getNumSeq());
-    message.append(seqStr);
+    strcat(message,seqStr);
 
-    message.append("|");
-    message.append("1</head><data><CR></data>");
 
-    const char *msj = message.c_str();
+    strcat(message,"|");
+    strcat(message,"1</head><data><CR></data>");
 
-    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
+    cout << "MESSAGE:" << message << endl;
+    //const char *msj = message.c_str();
 
-    message = "<head>";
-    message.append(comand.getSourceHost());
-    message.append("|");
+    sendto(socket, message , strlen(message)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
 
-    serverPortStr = new char();
-    sprintf(serverPortStr,"%d",comand.getSourcePort());
-    message.append(serverPortStr);
-    message.append("|");
+    strcpy(message,"<head>");
+    strcat(message,host);
+    strcat(message,"|");
 
-    message.append(comand.getDestHost());
-    message.append("|");
+    strcat(message,portStr);
+    strcat(message,"|");
 
-    portStr = new char();
-    sprintf(portStr,"%d",comand.getDestPort());
-    message.append(portStr);
-    message.append("|");
+    strcat(message,serverHost);
+    strcat(message,"|");
 
-    seqStr = new char();
-    sprintf(seqStr,"%d",comand.getNumSeq());
-    message.append(seqStr);
+    strcat(message,serverPortStr);
+    strcat(message,"|");
 
-    message.append("|");
-    message.append("0</head><data>GOODBYE<CR></data>");
 
-    msj = message.c_str();
+    strcat(message,seqStr);
+    strcat(message,"|");
 
-    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&multicastDir , sizeof(multicastDir));
+    strcat(message,"0</head><data>GOODBYE<CR></data>");
+
+    cout << "MESSAGE2:" << message << endl;
+    //msj = message.c_str();
+
+    sendto(socket, message , strlen(message)+1, 0 , (struct sockaddr*)&multicastDir , sizeof(multicastDir));
 
 
     /** Hay que quedar esperando el ACK de todos **/
@@ -289,7 +287,7 @@ void logout(int socket, Comando comand, struct sockaddr_in clienteDireccion, str
 }
 
 
-void accionesLogin(int socketServidorAtiendeLogin, Comando comand, struct sockaddr_in clienteDireccion){
+void accionesLogin(char* host, char* nick, int socketServidorAtiendeLogin, Comando comand, struct sockaddr_in clienteDireccion){
     //arma y manda ack si no es duplicado crea nuevo usuario
     string message = "<head>";
     message.append(comand.getDestHost());
@@ -316,13 +314,14 @@ void accionesLogin(int socketServidorAtiendeLogin, Comando comand, struct sockad
     message.append("1</head><data><CR></data>");
 
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-    cout << comand.getSourceHost() << endl;
+    cout << host << endl;
     cout << comand.getSourcePort()<< endl;
-    cout << comand.getusuario()<< endl;
-
+    cout << nick<< endl;
+    unsigned int port = comand.getSourcePort();
     //si ya existe solo mandarle ack
-    //if (verificarSeq(comando))
-        //variablesGlobales->nuevoUsuario(comand.getSourceHost(),comand.getSourcePort(),comand.getusuario());
+    //if (verificarSeq(comand))
+    variablesGlobales->nuevoUsuario(host,port,nick);
+
 
     const char *msj = message.c_str();
     sendto(socketServidorAtiendeLogin, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
@@ -400,51 +399,72 @@ int main()
 
     memset (buffer,NULL,BUFFERSIZE);//vacio buffer
 
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 100000;
+    if (setsockopt(socketServidorAtiendeLogin, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
+        perror("Error");
+    }
+    if(recvfrom(socketServidorAtiendeLogin, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&clienteDireccion, &len) >= 0){
+        cout << "mensaje recibido"<< endl;
+        cout << inet_ntoa(clienteDireccion.sin_addr) << endl;
+        cout << clienteDireccion.sin_port << endl;
+        cout << buffer << endl;
 
-    recvfrom(socketServidorAtiendeLogin, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&clienteDireccion, &len);
-    cout << "mensaje recibido"<< endl;
-    cout << inet_ntoa(clienteDireccion.sin_addr) << endl;
-    cout << clienteDireccion.sin_port << endl;
-    cout << buffer << endl;
+        Comando comando = comandoParsear(buffer);
 
-    Comando comando = comandoParsear(buffer);
+        char* serverHost = new char[60];
 
-    switch ( comando.getTipo()) {
+        strcpy(serverHost,comando.getDestHost());
 
-        case LOGIN:{
-        cout << "llego LOGIN "<< endl;
-        accionesLogin(socketServidorAtiendeLogin,comando,clienteDireccion);
+        char* host = new char[60];
+        strcpy(host,comando.getSourceHost());
+
+        switch ( comando.getTipo()) {
+
+            case LOGIN:{
+            char* nick = new char[150];
+            strcpy(nick,comando.getusuario());
+            cout << "llego LOGIN "<< endl;
+            accionesLogin(host, nick, socketServidorAtiendeLogin,comando,clienteDireccion);
+            delete[] nick;
+            }
+
+            break;
+
+            case LOGOUT:{
+            cout << "llego logout"<< endl;
+            logout(serverHost,host, socketParaMulticast,comando,clienteDireccion,multicasDir);
+            }
+            break;
+
+            case GET_CONNECTED:{
+            cout << "llego get connected"<< endl;
+            //accionesGetConnected();
+            }
+            break;
+
+            case MESSAGE:{
+            cout << "llego message"<< endl;
+            //accionesMessage();
+            }
+            break;
+
+            case PRIVATE_MESSAGE:{
+            cout << "llego private message"<< endl;
+            //accionesPrivateMessage();
+            }
+            break;
+
+            default:
+            cout << "error al parsear"<< endl;
+            break;
+
         }
 
-        break;
+        delete[] serverHost;
+        delete[] host;
 
-        case LOGOUT:{
-        cout << "llego logout"<< endl;
-        logout(socketParaMulticast,comando,clienteDireccion,multicasDir);
-        }
-        break;
-
-        case GET_CONNECTED:{
-        cout << "llego get connected"<< endl;
-        //accionesGetConnected();
-        }
-        break;
-
-        case MESSAGE:{
-        cout << "llego message"<< endl;
-        //accionesMessage();
-        }
-        break;
-
-        case PRIVATE_MESSAGE:{
-        cout << "llego private message"<< endl;
-        //accionesPrivateMessage();
-        }
-        break;
-
-        default:
-        cout << "error al parsear"<< endl;
-        break;
 
     }
 

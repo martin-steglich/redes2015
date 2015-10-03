@@ -183,7 +183,7 @@ public class ThreadsPrueba implements Runnable {
                             
                            
                             //Intento reenviar hasta que se reciba el ACK o un maximo de 3 veces
-                            while((!received) && (attempts < 4)){
+                            while((!received) && (attempts < 3)){
                                try{
                                     //Seteo el timeoute para recibir el ACK
                                     socket.setSoTimeout(50);
@@ -215,6 +215,8 @@ public class ThreadsPrueba implements Runnable {
                                String errorMessage = "Servidor no disponible en el host/puerto especificados";
 
                                chat.showErrorMessage(errorMessage);
+                               chat.getCliente().setConnected(false);
+                               sequenceNumber = 0;
                            }else{
                                if(msg.startsWith("LOGIN")){
                                    chat.getCliente().setConnected(true);
@@ -240,7 +242,7 @@ public class ThreadsPrueba implements Runnable {
                             DatagramPacket message = new DatagramPacket(data, data.length);
                             multicastSocket.receive(message);
                             receivedMessage = new String(message.getData());
-                            
+                            System.out.println(receivedMessage);
                             //Envio el ACK para el paquete recibido
                             int seqNum = getSequenceNumber(receivedMessage);
                             String ack = armarPaquete(chat.getCliente().getHost(), chat.getCliente().getPort(), 
@@ -263,6 +265,7 @@ public class ThreadsPrueba implements Runnable {
                                     if(typeMessage.equals("GOODBYE")){
                                         chat.getCliente().setConnected(false);
                                         chat.disconnect();
+                                        sequenceNumber = 0;
                                     }else if(typeMessage.equals("CONNECTED")){
                                         List<String> connected = getConnected(receivedMessage);
                                         //chat.updateConnectedList(connected);
@@ -279,6 +282,7 @@ public class ThreadsPrueba implements Runnable {
                                     }
                                 }
                             }
+                            multicastSocket.close();
                         
                         }
                     }break;

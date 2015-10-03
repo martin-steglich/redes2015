@@ -15,6 +15,7 @@
         this->sourceHost = sourceHost;
         this->sourcePort = sourcePort;
         this->destHost = destHost;
+        this->destHost = destHost;
         this->destPort = destPort;
         this->numSeq = numSeq;
 
@@ -79,7 +80,6 @@
     cout << sourcePort << endl;
     pch = strtok (NULL, "|");
     char * destHost =  pch;
-    cout << destHost << endl;
     pch = strtok (NULL, "|");
     unsigned int destPort =  atoi(pch);
     cout << destPort << endl;
@@ -101,6 +101,7 @@
         return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,LOGIN,usuario,NULL,false,NULL);
     }
     else if (strcmp(tipo,"LOGOUT") == 0){
+
         return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,LOGOUT,NULL,NULL,false,NULL);
     }
     else if (strcmp(tipo,"GET_CONNECTED") == 0){

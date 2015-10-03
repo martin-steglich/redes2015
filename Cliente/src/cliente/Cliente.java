@@ -82,6 +82,12 @@ public class Cliente {
         this.connected = connected;
         messages = new ArrayList<>();
         messagesToSend = new ArrayList<>();
+        
+        if(!connected){
+            port =null;
+            host = null;
+            
+        }
     }
 
     public synchronized String getServerHost() {

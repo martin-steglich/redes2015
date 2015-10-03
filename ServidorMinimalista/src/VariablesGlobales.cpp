@@ -17,11 +17,12 @@ time_t VariablesGlobales::activeTime;
 VariablesGlobales::VariablesGlobales(){}
 VariablesGlobales* VariablesGlobales::getInstance(){
     if(instance == NULL){
-        instance = new VariablesGlobales;
+        instance = new VariablesGlobales();
         VariablesGlobales::cantConectados = 0;
         VariablesGlobales::cantMensajesEnviados = 0;
         VariablesGlobales::cantConexionesTotales = 0;
         time(&VariablesGlobales::activeTime);
+
     }
     return instance;
 }
@@ -50,22 +51,17 @@ unsigned int VariablesGlobales::getSeqNumber(){
 }
 
 void VariablesGlobales::nuevoUsuario(string host, int port, string nick){
-
     if(!(existeCliente(nick))){
-
-        Cliente* cliente;
+        Cliente* cliente = new Cliente;
 
         cliente->host = host;
         cliente->port = port;
         cliente->nick = nick;
         time(&cliente->activeTime);
         cliente->senderSeq = 0;
-
-
-
         conectados.insert(cliente);
 
-        VariablesGlobales::cantConectados++;
+
     }
 }
 
@@ -91,13 +87,15 @@ time_t VariablesGlobales::getActiveTime()const{
 }
 
 set<string> VariablesGlobales::getConectados(){
-    set<string> connected;
 
+    set<string> connected;
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
         Cliente* actual = *it;
         string nick = actual->nick;
+
         connected.insert(nick);
     }
+
     return connected;
 }
 
