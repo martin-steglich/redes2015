@@ -98,29 +98,61 @@ int comandosConsola(Mutex &mtx){
 }
 
 //puerto y host corresponden al receptor (el que pidio los conectados)
-void getConnected(int puerto, string host, int serverPort, string serverHost){
+void getConnected(int socket, Comando comand, struct sockaddr_in clienteDireccion, struct sockaddr_in multicastDir){
+
+    //ack
+    string message = "<head>";
+    message.append(comand.getDestHost());
+    message.append("|");
+
+    char* serverPortStr = new char();
+    sprintf(serverPortStr,"%d",comand.getDestPort());
+    message.append(serverPortStr);
+    message.append("|");
+
+    message.append(comand.getSourceHost());
+    message.append("|");
+
+    char* portStr = new char();
+    sprintf(portStr,"%d",comand.getSourcePort());
+    message.append(portStr);
+    message.append("|");
+
+    char* seqStr = new char();
+    sprintf(seqStr,"%d",comand.getNumSeq());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("1</head><data><CR></data>");
+
+    const char *msj = message.c_str();
+
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
+
+
+
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
     set<string> users = variablesGlobales->getConectados();
 
-    string message = "<head>";
-    message.append(serverHost);
+    message = "<head>";
+    message.append(comand.getDestHost());
     message.append("|");
 
-    char* serverPortStr = new char();
-    sprintf(serverPortStr,"%d",serverPort);
+    serverPortStr = new char();
+    sprintf(serverPortStr,"%d",comand.getDestPort());
     message.append(serverPortStr);
     message.append("|");
 
-    message.append(host);
+    message.append(comand.getSourceHost());
     message.append("|");
 
-    char* portStr = new char();;
-    sprintf(portStr,"%d",puerto);
+    portStr = new char();;
+    sprintf(portStr,"%d",comand.getSourcePort());
     message.append(portStr);
     message.append("|");
 
-    char* seqStr = new char();;
+    seqStr = new char();;
     sprintf(seqStr,"%d",variablesGlobales->getSeqNumber());
     message.append(seqStr);
 
@@ -136,23 +168,56 @@ void getConnected(int puerto, string host, int serverPort, string serverHost){
     }
     message.append("<CR></data>");
 
-    /** ENVIAR MENSAJE AL MULTICAST **/
+    msj = message.c_str();
+
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&multicastDir , sizeof(multicastDir));
     /** Hay que quedar esperando el ACK de todos **/
     variablesGlobales->changeSeqNumber();
 }
 
 //puerto y host corresponden al emisor del mensaje (es para obtener el nick)
-void relayedMessage(int puerto, string host, int serverPort, string serverHost, string msg){
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+void relayedMessage(int socket, Comando comand, struct sockaddr_in clienteDireccion, struct sockaddr_in multicastDir){
 
-    Cliente* cliente = variablesGlobales->buscarCliente(host, puerto);
-
+    //ack
     string message = "<head>";
-    message.append(serverHost);
+    message.append(comand.getDestHost());
     message.append("|");
 
     char* serverPortStr = new char();
-    sprintf(serverPortStr,"%d",serverPort);
+    sprintf(serverPortStr,"%d",comand.getDestPort());
+    message.append(serverPortStr);
+    message.append("|");
+
+    message.append(comand.getSourceHost());
+    message.append("|");
+
+    char* portStr = new char();
+    sprintf(portStr,"%d",comand.getSourcePort());
+    message.append(portStr);
+    message.append("|");
+
+    char* seqStr = new char();
+    sprintf(seqStr,"%d",comand.getNumSeq());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("1</head><data><CR></data>");
+
+    const char *msj = message.c_str();
+
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
+
+
+    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+
+    Cliente* cliente = variablesGlobales->buscarCliente(comand.getSourceHost(), comand.getSourcePort());
+
+    message = "<head>";
+    message.append(comand.getDestHost());
+    message.append("|");
+
+    serverPortStr = new char();
+    sprintf(serverPortStr,"%d",comand.getDestPort());
     message.append(serverPortStr);
     message.append("|");
     message.append("0");
@@ -160,7 +225,7 @@ void relayedMessage(int puerto, string host, int serverPort, string serverHost, 
     message.append("0");
     message.append("|");
 
-    char* seqStr = new char();
+    seqStr = new char();
     sprintf(seqStr,"%d",variablesGlobales->getSeqNumber());
     message.append(seqStr);
 
@@ -168,10 +233,15 @@ void relayedMessage(int puerto, string host, int serverPort, string serverHost, 
     message.append("0</head><data>RELAYED_MESSAGE ");
     message.append(cliente->nick);
     message.append(" ");
-    message.append(msg);
+    message.append(comand.getMensaje());
     message.append("<CR></data>");
 
-    /** ENVIAR MENSAJE AL MULTICAST **/
+    msj = message.c_str();
+
+    //while 3 intentos con timeout guardar de quien llega respuesta
+
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&multicastDir , sizeof(multicastDir));
+
     /** Hay que quedar esperando el ACK de todos **/
     variablesGlobales->changeSeqNumber();
 
@@ -179,48 +249,86 @@ void relayedMessage(int puerto, string host, int serverPort, string serverHost, 
 
 //puerto y host corresponden al emisor del mensaje (es para obtener el nick)
 //nick corresponde al nick del receptor (es para obtener el puerto y host de envio)
-void privateMessage(int puerto, string host, int serverPort, string serverHost, string nick, string msg){
+void privateMessage(int socket, Comando comand, struct sockaddr_in clienteDireccion, struct sockaddr_in multicastDir){//(int puerto, string host, int serverPort, string serverHost, string nick, string msg){
+
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
-    Cliente* emisor = variablesGlobales->buscarCliente(host, puerto);
-    Cliente* receptor = variablesGlobales->buscarCliente(nick);
+    Cliente* emisor = variablesGlobales->buscarCliente(comand.getSourceHost(),comand.getSourcePort());
+    Cliente* receptor = variablesGlobales->buscarCliente(comand.getDestinatarioMensajePrivado());
 
     string message = "<head>";
-    message.append(serverHost);
+    message.append(comand.getDestHost());
     message.append("|");
 
     char* serverPortStr = new char();
-    sprintf(serverPortStr,"%d",serverPort);
+    sprintf(serverPortStr,"%d",comand.getDestPort());
     message.append(serverPortStr);
     message.append("|");
 
-    message.append(receptor->host);
+    message.append(comand.getSourceHost());
     message.append("|");
 
     char* portStr = new char();
-    sprintf(portStr,"%d",receptor->port);
+    sprintf(portStr,"%d",comand.getSourcePort());
     message.append(portStr);
     message.append("|");
 
-    char* seqStr = new char();;
-    sprintf(seqStr,"%d",variablesGlobales->getSeqNumber());
+    char* seqStr = new char();
+    sprintf(seqStr,"%d",comand.getNumSeq());
+    message.append(seqStr);
+
+    message.append("|");
+    message.append("1</head><data><CR></data>");
+
+    const char *msj = message.c_str();
+
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
+
+
+    //si es duplicado no mandar Private
+
+    message = "<head>";
+    message.append(receptor->host);
+    message.append("|");
+
+    serverPortStr = new char();
+    sprintf(serverPortStr,"%d",receptor->port);
+    message.append(serverPortStr);
+    message.append("|");
+
+    message.append(comand.getDestHost());
+    message.append("|");
+
+    portStr = new char();
+    sprintf(portStr,"%d",comand.getDestPort());
+    message.append(portStr);
+    message.append("|");
+
+    seqStr = new char();
+    sprintf(seqStr,"%d",comand.getNumSeq());
     message.append(seqStr);
 
     message.append("|");
     message.append("0</head><data>PRIVATE_MESSAGE ");
     message.append(emisor->nick);
     message.append(" ");
-    message.append(msg);
+    message.append(comand.getMensaje());
     message.append("<CR></data>");
 
-    /** ENVIAR MENSAJE AL MULTICAST **/
+    msj = message.c_str();
+
+    //while 3 intentos con timeout guardar de quien llega respuesta
+
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&multicastDir , sizeof(multicastDir));
+
     /** Hay que quedar esperando el ACK de todos **/
     variablesGlobales->changeSeqNumber();
 
 }
+
 //puerto y host corresponden al emisor del mensaje (es para borrarlo de los conectados)
 void logout(int socket, Comando comand, struct sockaddr_in clienteDireccion, struct sockaddr_in multicastDir){
-
+    //manda ack y goodbye a multicast
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
     //Cliente* cliente = variablesGlobales->buscarCliente(comand.getSourceHost(), comand.getSourcePort());
@@ -255,6 +363,9 @@ void logout(int socket, Comando comand, struct sockaddr_in clienteDireccion, str
 
     sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
 
+
+    //si es duplicado no mandar Goodbye
+
     message = "<head>";
     message.append(comand.getSourceHost());
     message.append("|");
@@ -281,6 +392,8 @@ void logout(int socket, Comando comand, struct sockaddr_in clienteDireccion, str
 
     msj = message.c_str();
 
+    //while 3 intentos con timeout guardar de quien llega respuesta
+
     sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&multicastDir , sizeof(multicastDir));
 
 
@@ -289,7 +402,7 @@ void logout(int socket, Comando comand, struct sockaddr_in clienteDireccion, str
 }
 
 
-void accionesLogin(int socketServidorAtiendeLogin, Comando comand, struct sockaddr_in clienteDireccion){
+void accionesLogin(int socket, Comando comand, struct sockaddr_in clienteDireccion){
     //arma y manda ack si no es duplicado crea nuevo usuario
     string message = "<head>";
     message.append(comand.getDestHost());
@@ -321,11 +434,12 @@ void accionesLogin(int socketServidorAtiendeLogin, Comando comand, struct sockad
     cout << comand.getusuario()<< endl;
 
     //si ya existe solo mandarle ack
+    //VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
     //if (verificarSeq(comando))
         //variablesGlobales->nuevoUsuario(comand.getSourceHost(),comand.getSourcePort(),comand.getusuario());
 
     const char *msj = message.c_str();
-    sendto(socketServidorAtiendeLogin, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
+    sendto(socket, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
 
 };
 
@@ -334,21 +448,21 @@ int main()
 
     char buffer[BUFFERSIZE]; //donde se guardan msj
 
-    int socketServidorAtiendeLogin;
+    int socketServidorAtiende;
     struct sockaddr_in myDireccion;
     struct sockaddr_in clienteDireccion;
     struct sockaddr_in multicasDir;
 
     int socketParaMulticast = socket(PF_INET,SOCK_DGRAM, 0);
-    if(socketServidorAtiendeLogin == -1)
+    if(socketParaMulticast == -1)
       cout << "No puedo inicializar el socket";
 
      multicasDir.sin_family=PF_INET;
      inet_aton(HELLO_GROUP, &multicasDir.sin_addr);
      multicasDir.sin_port=htons(HELLO_PORT);
 
-    socketServidorAtiendeLogin = socket(PF_INET,SOCK_DGRAM, 0);
-    if(socketServidorAtiendeLogin == -1)
+    socketServidorAtiende = socket(PF_INET,SOCK_DGRAM, 0);
+    if(socketServidorAtiende == -1)
       cout << "No puedo inicializar el socket";
 
     myDireccion.sin_family = PF_INET ; //indica el dominio de comunicacion a utilizar
@@ -356,7 +470,7 @@ int main()
     myDireccion.sin_addr.s_addr = htonl(INADDR_ANY); //ip en la que escucha INADDR_ANY significa cualquiera
 
 
-    if( bind( socketServidorAtiendeLogin, (struct sockaddr*)&myDireccion, sizeof(myDireccion)) == -1 )
+    if( bind( socketServidorAtiende, (struct sockaddr*)&myDireccion, sizeof(myDireccion)) == -1 )
       cout << "No Puede Hacer Bind" << endl;
 
     cout << "Estoy VIVO" << endl;
@@ -401,7 +515,7 @@ int main()
     memset (buffer,NULL,BUFFERSIZE);//vacio buffer
 
 
-    recvfrom(socketServidorAtiendeLogin, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&clienteDireccion, &len);
+    recvfrom(socketServidorAtiende, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&clienteDireccion, &len);
     cout << "mensaje recibido"<< endl;
     cout << inet_ntoa(clienteDireccion.sin_addr) << endl;
     cout << clienteDireccion.sin_port << endl;
@@ -413,9 +527,8 @@ int main()
 
         case LOGIN:{
         cout << "llego LOGIN "<< endl;
-        accionesLogin(socketServidorAtiendeLogin,comando,clienteDireccion);
+        accionesLogin(socketServidorAtiende,comando,clienteDireccion);
         }
-
         break;
 
         case LOGOUT:{
@@ -426,19 +539,19 @@ int main()
 
         case GET_CONNECTED:{
         cout << "llego get connected"<< endl;
-        //accionesGetConnected();
+        getConnected(socketParaMulticast,comando,clienteDireccion,multicasDir);
         }
         break;
 
         case MESSAGE:{
         cout << "llego message"<< endl;
-        //accionesMessage();
+        relayedMessage(socketParaMulticast,comando,clienteDireccion,multicasDir);
         }
         break;
 
         case PRIVATE_MESSAGE:{
         cout << "llego private message"<< endl;
-        //accionesPrivateMessage();
+        privateMessage(socketParaMulticast,comando,clienteDireccion,multicasDir);
         }
         break;
 
@@ -457,7 +570,7 @@ int main()
           }
       }
 
-    close(socketServidorAtiendeLogin);
+    close(socketServidorAtiende);
 
     return 0;
 }
