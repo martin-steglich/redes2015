@@ -5,9 +5,10 @@
 #include <string.h>
 #include <exception>
 
-    Comando::Comando(char* sourceHost,unsigned int sourcePort,char* destHost,unsigned int destPort,unsigned int numSeq, tipoComando tipo,char* usuario,char* mensaje,bool mensajePrivado,char*  destinatarioMensajePrivado){
+    Comando::Comando(char* sourceHost,unsigned int sourcePort,char* destHost,unsigned int destPort,unsigned int numSeq, bool esAck, tipoComando tipo,char* usuario,char* mensaje,bool mensajePrivado,char*  destinatarioMensajePrivado){
 
         this->tipo = tipo;
+        this->esAck = esAck;
         this->usuario = usuario;
         this->mensaje = mensaje;
         this->mensajePrivado = mensajePrivado;
@@ -32,6 +33,10 @@
 
     char* Comando::getMensaje(){
         return this->mensaje;
+    };
+
+    bool Comando::getEsAck(){
+        return this->esAck;
     };
 
     bool Comando::getEsMensajePrivado(){
@@ -66,11 +71,10 @@
     Comando::~Comando(){};
 
 
-    Comando comandoParsear(char* buffer){
+    Comando* comandoParsear(char* buffer){
     char copia[512];
     strcpy(copia,buffer);
     char * pch = strtok (copia,">");//saco hasta head
-    cout << pch << endl;
     pch = strtok (NULL, "|");//agarro hasta Pipe
     char* sourceHost =  pch;
     pch = strtok (NULL, "|");
@@ -82,33 +86,44 @@
     pch = strtok (NULL, "|");
     unsigned int numSeq =  atoi(pch);
     pch = strtok (NULL, "<");
-    bool isAck =  pch;
+    bool isAck =  atoi(pch);
     pch = strtok (NULL, ">");// saco /head
     pch = strtok (NULL, ">");//saco data
     pch = strtok (NULL, "<");//agarro todo los datos
 
     char * tipo = strtok(pch, " <");//agarro el comando
 
-    if (strcmp(tipo,"LOGIN") == 0){
+    if (isAck == 1 ){
+
+        Comando* res = new Comando(sourceHost,sourcePort,destHost,destPort,numSeq,isAck,ACK,NULL,NULL,false,NULL);
+        return res;
+    }
+
+    else if (strcmp(tipo,"LOGIN") == 0){
 
         char * usuario = strtok(NULL,"<");
-        return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,LOGIN,usuario,NULL,false,NULL);
+        Comando* res = new Comando(sourceHost,sourcePort,destHost,destPort,numSeq,isAck,LOGIN,usuario,NULL,false,NULL);
+        return res;
     }
     else if (strcmp(tipo,"LOGOUT") == 0){
 
-        return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,LOGOUT,NULL,NULL,false,NULL);
+        Comando* res = new Comando(sourceHost,sourcePort,destHost,destPort,numSeq,isAck,LOGOUT,NULL,NULL,false,NULL);
+        return res;
     }
     else if (strcmp(tipo,"GET_CONNECTED") == 0){
-        return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,GET_CONNECTED,NULL,NULL,false,NULL);
+        Comando* res = new Comando(sourceHost,sourcePort,destHost,destPort,numSeq,isAck,GET_CONNECTED,NULL,NULL,false,NULL);
+        return res;
     }
     else if (strcmp(tipo,"MESSAGE") == 0){
         char * msj = strtok(NULL,"<");
-        return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,MESSAGE,NULL,msj,false,NULL);
+        Comando* res = new Comando(sourceHost,sourcePort,destHost,destPort,numSeq,isAck,MESSAGE,NULL,msj,false,NULL);
+        return res;
     }
     else if (strcmp(tipo,"PRIVATE_MESSAGE") == 0){
         char * destinatario = strtok(NULL," ");
         char * msj = strtok(NULL,"<");
-        return Comando(sourceHost,sourcePort,destHost,destPort,numSeq,PRIVATE_MESSAGE,NULL,msj,true,destinatario);
+        Comando* res  = new Comando(sourceHost,sourcePort,destHost,destPort,numSeq,isAck,PRIVATE_MESSAGE,NULL,msj,true,destinatario);
+        return res;
     }
     else
         cout << "error Al parsear "<< endl;

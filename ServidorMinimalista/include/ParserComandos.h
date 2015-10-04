@@ -12,13 +12,14 @@
 
 using namespace std;
 
-enum tipoComando { LOGIN , LOGOUT, GET_CONNECTED, MESSAGE , PRIVATE_MESSAGE};
+enum tipoComando { LOGIN , LOGOUT, GET_CONNECTED, MESSAGE , PRIVATE_MESSAGE , ACK};
 
 class Comando {
 
 public:
-    Comando(char* sourceHost,unsigned int sourcePort, char* destHost,unsigned int destPort,unsigned int numSeq,tipoComando tipo,char* usuario,char* mensaje,bool mensajePrivado,char*  destinatarioMensajePrivado);
+    Comando(char* sourceHost,unsigned int sourcePort, char* destHost,unsigned int destPort,unsigned int numSeq, bool esAck,tipoComando tipo,char* usuario,char* mensaje,bool mensajePrivado,char*  destinatarioMensajePrivado);
     tipoComando getTipo();
+    bool getEsAck();
     char* getusuario();
     char* getMensaje();
     bool getEsMensajePrivado();
@@ -32,6 +33,7 @@ public:
 
 private:
     tipoComando tipo;
+    bool esAck;
     char* usuario;
     char* mensaje;
     bool mensajePrivado;
@@ -43,7 +45,7 @@ private:
     unsigned int numSeq;
 };
 
-Comando comandoParsear(char* buffer);
+Comando* comandoParsear(char* buffer);
 
 
 
