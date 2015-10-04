@@ -9,14 +9,34 @@
 
         this->tipo = tipo;
         this->esAck = esAck;
-        this->usuario = usuario;
-        this->mensaje = mensaje;
+        if(usuario != NULL){
+            this->usuario = new char();
+            strcpy(this->usuario,usuario);
+        }
+        if(mensaje != NULL){
+            this->mensaje = new char();
+            strcpy(this->mensaje,mensaje);
+        }
+
         this->mensajePrivado = mensajePrivado;
-        this->destinatarioMensajePrivado = destinatarioMensajePrivado;
-        this->sourceHost = sourceHost;
+
+        if(destinatarioMensajePrivado != NULL){
+            this->destinatarioMensajePrivado = new char();
+            strcpy(this->destinatarioMensajePrivado,destinatarioMensajePrivado);
+        }
+
+        if(sourceHost != NULL){
+            this->sourceHost = new char();
+            strcpy(this->sourceHost,sourceHost);
+        }
+
         this->sourcePort = sourcePort;
-        this->destHost = destHost;
-        this->destHost = destHost;
+
+        if(destHost != NULL){
+            this->destHost = new char();
+            strcpy(this->destHost,destHost);
+        }
+
         this->destPort = destPort;
         this->numSeq = numSeq;
 
@@ -68,7 +88,26 @@
     return this->numSeq;
     };
 
-    Comando::~Comando(){};
+    Comando::~Comando(){
+        if(this->usuario != NULL){
+            delete[] this->usuario;
+        }
+        if(this->mensaje != NULL){
+            delete[] this->mensaje;
+        }
+
+        if(this->destinatarioMensajePrivado != NULL){
+            delete[] this->destinatarioMensajePrivado;
+        }
+
+        if(this->sourceHost != NULL){
+            delete[] this->sourceHost;
+        }
+        if(this->destHost != NULL){
+            delete[] this->destHost;
+        }
+
+    };
 
 
     Comando* comandoParsear(char* buffer){
@@ -103,6 +142,7 @@
 
         char * usuario = strtok(NULL,"<");
         Comando* res = new Comando(sourceHost,sourcePort,destHost,destPort,numSeq,isAck,LOGIN,usuario,NULL,false,NULL);
+
         return res;
     }
     else if (strcmp(tipo,"LOGOUT") == 0){
@@ -128,4 +168,5 @@
     else
         cout << "error Al parsear "<< endl;
 
+    return NULL;
     };

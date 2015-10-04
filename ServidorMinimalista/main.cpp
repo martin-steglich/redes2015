@@ -611,26 +611,33 @@ int main()
 
         Comando* comando = comandoParsear(buffer);
 
+        //cout << "**********USUARIO: " << comando->getusuario() << "*********" << endl;
+        char* nick = new char[150];
         char* serverHost = new char[60];
-
-        strcpy(serverHost,comando->getDestHost());
-
         char* host = new char[60];
-        strcpy(host,comando->getSourceHost());
+
+
+
+
+
 
         switch ( comando->getTipo()) {
 
             case LOGIN:{
-            char* nick = new char[150];
+
             strcpy(nick,comando->getusuario());
+            strcpy(serverHost,comando->getDestHost());
+            strcpy(host,comando->getSourceHost());
             cout << "llego LOGIN "<< endl;
             accionesLogin(host, nick, socketServidorAtiendeLogin,comando,clienteDireccion);
-            delete[] nick;
+
             }
 
             break;
 
             case LOGOUT:{
+            strcpy(serverHost,comando->getDestHost());
+            strcpy(host,comando->getSourceHost());
             cout << "llego logout"<< endl;
             logout(serverHost,host, socketParaMulticast,comando,clienteDireccion,multicasDir);
             }
@@ -700,6 +707,7 @@ int main()
 
         delete[] serverHost;
         delete[] host;
+        delete[] nick;
 
 
     }
