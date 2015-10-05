@@ -19,7 +19,6 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <mutex.h>
 #include <stdexcept>
 #include "VariablesGlobales.h"
 
@@ -55,39 +54,29 @@ using namespace std;
 //Longitud del buffer
 #define BUFFERSIZE 512 // poner el de los datagramas
 
-int comandosConsola(Mutex &mtx){
+int comandosConsola(){
 
     string command;
     bool exit = false;
-
+    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
     while (!exit){
         cin >> command;
 
         if(command.compare("exit") == 0)
             exit = true;
-        else if(command.compare("a") == 0){
-                mtx.lock();
-                VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-                set<string> users = variablesGlobales->getConectados();
-                mtx.unlock();
-                cout << "La cantidad clientes es: " << users.size();
-
-        }
+        else if(command.compare("a") == 0)
+            cout << "La cantidad de clientes es: " << variablesGlobales->getCantConectados() << endl;
         else if(command.compare("s") == 0)
-            cout << "Cantidad mensajes enviados" << endl;
+            cout << "Cantidad mensajes enviados" << variablesGlobales->getCantMensajesEnviados() << endl;
         else if(command.compare("d") == 0)
-            cout << "Cantidad conexiones totales" << endl;
+            cout << "Cantidad conexiones totales" << variablesGlobales->getCantConexionesTotales() << endl;
         else if(command.compare("f") == 0){
-            mtx.lock();
-            VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-            time_t activeTime = variablesGlobales->getActiveTime();
-            mtx.unlock();
-
-            time_t serverTime;
-            time(&serverTime);
-            double seconds = difftime(serverTime, activeTime);
-            printf ("El servidor se encuentra activo hace %.f segundos\n", seconds);
+                time_t activeTime = variablesGlobales->getActiveTime();
+                time_t serverTime;
+                time(&serverTime);
+                double seconds = difftime(serverTime, activeTime);
+                printf ("El servidor se encuentra activo hace %.f segundos\n", seconds);
         }
         cout<< endl;
     }
@@ -385,7 +374,10 @@ void accionesLogin(char* host, char* nick, int socketServidorAtiendeLogin, Coman
 
     //si ya existe solo mandarle ack
     //if (verificarSeq(comand))
+    cout << "La cantidad clientes antes de nuevo usuario es: " << variablesGlobales->getCantConectados() << endl;
     variablesGlobales->nuevoUsuario(host,port,nick);
+    cout << "La cantidad clientes despues es: " << variablesGlobales->getCantConectados() << endl;
+
 
     const char *msj = message.c_str();
     sendto(socketServidorAtiendeLogin, msj , strlen(msj)+1, 0 , (struct sockaddr*)&clienteDireccion , sizeof(clienteDireccion));
@@ -582,12 +574,7 @@ int main()
     bool salir = false;
     int hijoPid;
     int pidEstado;
-    Mutex mtx = Mutex();
-
-
-    mtx.lock();
     VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-    mtx.unlock();
 
     switch ( hijoPid=fork() ){ //creo hijo con fork
 
@@ -597,7 +584,7 @@ int main()
          break;
 
        case 0:   // Este es el proceso hijo
-         codigoSalida = comandosConsola(mtx);
+         codigoSalida = comandosConsola();
 
          if (codigoSalida == 1)
             exit(EXIT_SUCCESS);
