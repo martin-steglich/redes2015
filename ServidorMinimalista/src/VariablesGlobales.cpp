@@ -15,28 +15,28 @@ int VariablesGlobales::cantMensajesEnviados = 0;
 int VariablesGlobales::cantConexionesTotales = 0;
 unsigned int seqNumber = 0;
 time_t VariablesGlobales::activeTime;
-
+Mutex mtx;
 
 VariablesGlobales::VariablesGlobales(){}
 
 VariablesGlobales* VariablesGlobales::getInstance(){
-    Mutex mtx = Mutex();
-    mtx.lock();
+
     if(instance == NULL){
         instance = new VariablesGlobales();
         VariablesGlobales::cantConectados = 0;
         VariablesGlobales::cantMensajesEnviados = 0;
         VariablesGlobales::cantConexionesTotales = 0;
         time(&VariablesGlobales::activeTime);
+        mtx = Mutex();
 
     }
-    mtx.unlock();
+
     return instance;
 }
 
 int VariablesGlobales::getCantConectados()const{
 
-    return VariablesGlobales::cantConectados;
+    return cantConectados;
 
 }
 int VariablesGlobales::getCantMensajesEnviados()const{
@@ -50,13 +50,13 @@ int VariablesGlobales::getCantConexionesTotales()const{
 }
 
 void VariablesGlobales::changeSeqNumber(){
-    Mutex mtx = Mutex();
     mtx.lock();
     if(seqNumber == 1)
         seqNumber = 0;
     else
         seqNumber = 1;
     mtx.unlock();
+
 }
 
 unsigned int VariablesGlobales::getSeqNumber(){
@@ -65,11 +65,9 @@ unsigned int VariablesGlobales::getSeqNumber(){
 }
 
 void VariablesGlobales::nuevoUsuario(string host, int port, string nick){
-    Mutex mtx = Mutex();
     mtx.lock();
     if(!(existeCliente(nick))){
         Cliente* cliente = new Cliente;
-
         cliente->host = host;
         cliente->port = port;
         cliente->nick = nick;
@@ -77,12 +75,13 @@ void VariablesGlobales::nuevoUsuario(string host, int port, string nick){
         cliente->senderSeq = 0;
         conectados.insert(cliente);
 
+        VariablesGlobales::cantConectados++;
+        //VariablesGlobales::cantConexionesTotales++;   se puede agregar esta linea y eliminar la funcion nuevaconexion()
     }
     mtx.unlock();
 }
 
 void VariablesGlobales::finConexion(string host, unsigned int port){
-    Mutex mtx = Mutex();
     mtx.lock();
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
         Cliente* actual = *it;
@@ -90,19 +89,18 @@ void VariablesGlobales::finConexion(string host, unsigned int port){
             conectados.erase(it);
         }
     }
+    VariablesGlobales::cantConectados--;
     mtx.unlock();
 }
 
 
 void VariablesGlobales::nuevoMensaje(){
-    Mutex mtx = Mutex();
     mtx.lock();
     VariablesGlobales::cantMensajesEnviados++;
     mtx.unlock();
 }
 
-void VariablesGlobales::nuevaConexion(){
-    Mutex mtx = Mutex();
+void VariablesGlobales::nuevaConexion(){   //esta funcion creo que se puede borrar y actualizar la variable al haer nuevousuario()
     mtx.lock();
     VariablesGlobales::cantConexionesTotales++;
     mtx.unlock();
@@ -114,7 +112,6 @@ time_t VariablesGlobales::getActiveTime()const{
 }
 
 set<string> VariablesGlobales::getConectados(){
-    Mutex mtx = Mutex();
     mtx.lock();
     set<string> connected;
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
@@ -128,7 +125,7 @@ set<string> VariablesGlobales::getConectados(){
 }
 
 Cliente* VariablesGlobales::buscarCliente(string nick){
-    Mutex mtx = Mutex();
+
     mtx.lock();
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
         Cliente* actual = *it;
@@ -142,7 +139,7 @@ Cliente* VariablesGlobales::buscarCliente(string nick){
 }
 
 Cliente* VariablesGlobales::buscarCliente(string host, unsigned int port){
-    Mutex mtx = Mutex();
+
     mtx.lock();
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
         Cliente* actual = *it;
@@ -158,7 +155,7 @@ Cliente* VariablesGlobales::buscarCliente(string host, unsigned int port){
 }
 
 bool VariablesGlobales::existeCliente(string nick){
-    Mutex mtx = Mutex();
+
     mtx.lock();
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
         Cliente* actual = *it;
