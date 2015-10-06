@@ -67,7 +67,7 @@
 	<stdexcept>
 	<string>
 
-1443984522 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
+1444102891 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
 	<iostream>
 	<cstdlib>
 	"ParserComandos.h"
@@ -87,9 +87,10 @@
 	<unistd.h>
 	<pthread.h>
 	<mutex.h>
+	<stdexcept>
 	"VariablesGlobales.h"
 
-1443902730 /home/tincho/Documents/redes2015/ServidorMinimalista/include/VariablesGlobales.h
+1444101177 /home/tincho/Documents/redes2015/ServidorMinimalista/include/VariablesGlobales.h
 	<set>
 	<time.h>
 	<string>
@@ -102,12 +103,13 @@
 1443893155 /home/tincho/Documents/redes2015/ServidorMinimalista/include/mutex.h
 	<pthread.h>
 
-1443908957 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
+1444101240 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
 	"VariablesGlobales.h"
 	<stdexcept>
 	<string>
 	<iostream>
 	<cstdlib>
+	<mutex.h>
 
 1443893155 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/Cliente.cpp
 	"Cliente.h"

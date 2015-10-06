@@ -53,7 +53,7 @@ public class ThreadsPrueba implements Runnable {
     
     public String armarPaquete(String sourceHost, Integer sourcePort, String destHost, Integer destPort, String msg, Integer seq, Integer isAck){
         String message = "<head>"+ sourceHost + "|" + sourcePort + "|" + destHost + "|" + destPort + "|";
-        message += seq + "|" + isAck + "</head>";
+        message += seq + "|" + isAck + "|0</head>";
         message += "<data>" + msg + "</data>";
         
         return message;
@@ -63,6 +63,7 @@ public class ThreadsPrueba implements Runnable {
         
         String[] split = message.split("</head>")[0].split("\\|");       
         int seqNum = Integer.parseInt(split[4]);
+        chat.getCliente().setServerSequence(Integer.parseInt(split[6]));
         
         return seqNum; 
     }
@@ -72,6 +73,7 @@ public class ThreadsPrueba implements Runnable {
         
         String destHost = split[2];
         Integer destPort = Integer.parseInt(split[3]);
+
         
         return ((destHost.equals(myHost)) && (destPort.equals(myPort))) || isMulticast(receivedMessage);
         
@@ -97,8 +99,13 @@ public class ThreadsPrueba implements Runnable {
         String data = split[0];
         
         String[] splittedData = data.split(" ");
+        String m = splittedData[2];
+        for(int i = 3; i < splittedData.length; i++){
+            m += " " + splittedData[i];
+            
+        }
         
-        String msg = splittedData[1] + ": " + splittedData[2];
+        String msg = splittedData[1] + ": " + m;
         
         return msg;
         
@@ -112,8 +119,14 @@ public class ThreadsPrueba implements Runnable {
         String[] splittedData = data.split(" ");
         
         List<String> connected = new ArrayList<>();
-        for(String s : splittedData)
-            connected.add(s);
+        for(int i=1; i < splittedData.length; i++){
+            
+            if(splittedData[i].startsWith("\\|"))
+                connected.add(splittedData[i].substring(1));
+            else
+                connected.add(splittedData[i]);
+            
+        }
         
         return connected;
     }
@@ -247,20 +260,21 @@ public class ThreadsPrueba implements Runnable {
                             int seqNum = getSequenceNumber(receivedMessage);
                             String ack = armarPaquete(chat.getCliente().getHost(), chat.getCliente().getPort(), 
                                     chat.getCliente().getServerHost(), chat.getCliente().getServerPort(), "", seqNum, 1);
-                                                        
+                            
+                            InetAddress ip = InetAddress.getByName(chat.getCliente().getServerHost());
                             DatagramSocket ackSocket = new DatagramSocket();
-                            DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, message.getAddress(), message.getPort());
+                            DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, ip, 51234);
                             ackSocket.send(ackPacket);
                             ackSocket.close();
-                            
+                            sequenceNumber = chat.getCliente().getServerSequence();
                             //Proceso el mensaje recibido
-                            if(sequenceNumber == seqNum){
+                            
+                            if( sequenceNumber == seqNum){
                                 sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
-                                
+                                chat.getCliente().setServerSequence(sequenceNumber);
                                 //Si es el numero de secuencia que esperaba
                                 if(isForMe(chat.getCliente().getHost(), chat.getCliente().getPort(), receivedMessage)){
                                     //Si el paquete es para mi (privado) o multicast
-                                    
                                     String typeMessage = getTypeMessage(receivedMessage);
                                     if(typeMessage.equals("GOODBYE")){
                                         chat.getCliente().setConnected(false);
@@ -268,7 +282,7 @@ public class ThreadsPrueba implements Runnable {
                                         sequenceNumber = 0;
                                     }else if(typeMessage.equals("CONNECTED")){
                                         List<String> connected = getConnected(receivedMessage);
-                                        //chat.updateConnectedList(connected);
+                                        chat.getConnected(connected);
                                     }else if(typeMessage.equals("RELAYED_MESSAGE")){
                                         String msg = getMessage(receivedMessage);
                                         msg = "Mensaje de " + msg;

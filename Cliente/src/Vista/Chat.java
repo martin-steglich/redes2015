@@ -48,7 +48,8 @@ public class Chat extends javax.swing.JFrame {
         messageField.requestFocus();
         chatArea.setOpaque(true);
         privateCheckbox.setEnabled(true);
-        
+        usersConnected.setEnabled(false);
+        usersConnected.removeAllItems();
         //infoPanel.setVisible(false);
         
     }
@@ -73,6 +74,8 @@ public class Chat extends javax.swing.JFrame {
         messageField.setText("");
         privateCheckbox.setEnabled(false);
         privateCheckbox.setSelected(false);
+        usersConnected.setEnabled(false);
+        usersConnected.removeAllItems();
         //infoPanel.setVisible(true);
     }
     
@@ -116,6 +119,8 @@ public class Chat extends javax.swing.JFrame {
     }
     
     public void getConnected(List<String> users){
+        usersConnected.setEnabled(true);
+        usersConnected.removeAllItems();
         for(String user : users)
             usersConnected.addItem(user);
         

@@ -23,6 +23,7 @@ public class Cliente {
     private List<String> messages;
     private List<String> messagesToSend;
     private boolean connected;
+    private int serverSequence;
     
 
     public Cliente() {
@@ -73,7 +74,7 @@ public class Cliente {
     public synchronized void setMessagesToSend(List<String> messagesToSend) {
         this.messagesToSend = messagesToSend;
     }
-
+    
     public synchronized boolean isConnected() {
         return connected;
     }
@@ -104,6 +105,14 @@ public class Cliente {
 
     public synchronized void setServerPort(Integer serverPort) {
         this.serverPort = serverPort;
+    }
+
+    public synchronized int getServerSequence() {
+        return serverSequence;
+    }
+
+    public synchronized void setServerSequence(int serverSequence) {
+        this.serverSequence = serverSequence;
     }
     
     

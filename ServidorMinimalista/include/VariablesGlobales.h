@@ -53,7 +53,8 @@ class VariablesGlobales
         Cliente* buscarCliente(string nick);
         Cliente* buscarCliente(string host, unsigned int port);
         bool existeCliente(string nick);
-
+        bool existeCliente(string host, unsigned int port);
+        void numeroSecuenciaCliente(string host, unsigned int port);
         void vaciarMemoria();
 
 };

@@ -151,6 +151,7 @@ Cliente* VariablesGlobales::buscarCliente(string host, unsigned int port){
             return actual;
         }
     }
+
     mtx.unlock();
     return NULL;
 
@@ -168,4 +169,40 @@ bool VariablesGlobales::existeCliente(string nick){
     }
     mtx.unlock();
     return false;
+}
+
+bool VariablesGlobales::existeCliente(string host, unsigned int port){
+    Mutex mtx = Mutex();
+    mtx.lock();
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if((actual->host == host) && (actual->port == port)){
+            mtx.unlock();
+            return true;
+        }
+    }
+    mtx.unlock();
+    return false;
+}
+
+void VariablesGlobales::numeroSecuenciaCliente(string host, unsigned int port){
+    Mutex mtx = Mutex();
+    mtx.lock();
+    Cliente* cliente = buscarCliente(host, port);
+    if(cliente->senderSeq == 1)
+        cliente->senderSeq = 0;
+    else
+        cliente->senderSeq = 1;
+
+    mtx.unlock();
+
+}
+
+void VariablesGlobales::vaciarMemoria(){
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        delete actual;
+    }
+
+    conectados.clear();
 }
