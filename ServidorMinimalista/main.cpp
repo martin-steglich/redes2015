@@ -18,7 +18,11 @@
 #include <pthread.h>
 #include <mutex.h>
 #include <stdexcept>
-#include "VariablesGlobales.h"
+#include <set>
+#include "Cliente.h"
+
+
+//#include "VariablesGlobales.h"
 
 using namespace std;
 
@@ -30,6 +34,58 @@ using namespace std;
 
 #define BUFFERSIZE 512
 
+//-----------------------------------------
+static int cantConectados;
+int cantMensajesEnviados;
+int cantConexionesTotales;
+unsigned int seqNumber;
+time_t activeTime;
+Mutex mtx;
+set<Cliente*> conectados;
+//-----------------------------------------
+
+
+set<string> getNickConectados(){
+    set<string> connected;
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        string nick = actual->getNick();
+
+        connected.insert(nick);
+    }
+
+    return connected;
+}
+
+Cliente* buscarCliente(string nick){
+
+    mtx.lock();
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if(actual->getNick() == nick){
+            mtx.unlock();
+            return actual;
+        }
+    }
+    mtx.unlock();
+    return NULL;
+}
+
+Cliente* buscarCliente(string host, unsigned int port){
+
+    mtx.lock();
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if((actual->getHost() == host) && (actual->getPort() == port)){
+            mtx.unlock();
+            return actual;
+        }
+    }
+
+    mtx.unlock();
+    return NULL;
+
+}
 
 int comandosConsola(){
 
@@ -38,25 +94,18 @@ int comandosConsola(){
 
     while (!exit){
         cin >> command;
-
         if(command.compare("exit") == 0)
             exit = true;
         else if(command.compare("a") == 0){
-                VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-                set<string> users = variablesGlobales->getConectados();
-                cout << "La cantidad clientes es: " << users.size();
-
+                set<string> users = getNickConectados();
+                //cout << "La cantidad size es: " << users.size() << endl;
+                cout << "#clientes desde comandosConsola() es: " << cantConectados << endl;
         }
         else if(command.compare("s") == 0){
-            VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-            cout << "La cantidad de mensajes enviados es: " << variablesGlobales->getCantMensajesEnviados() << endl;
+            cout << "La cantidad de mensajes enviados es: " << cantMensajesEnviados << endl;
         }else if(command.compare("d") == 0){
-            VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-            cout << "La cantidad de conexiones totales es: " << variablesGlobales->getCantConexionesTotales() << endl;
+            cout << "La cantidad de conexiones totales es: " << cantConexionesTotales << endl;
         }else if(command.compare("f") == 0){
-            VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-            time_t activeTime = variablesGlobales->getActiveTime();
-
             time_t serverTime;
             time(&serverTime);
             double seconds = difftime(serverTime, activeTime);
@@ -68,11 +117,94 @@ int comandosConsola(){
     return 1;
 }
 
+void changeSeqNumber(){
+
+    if(seqNumber == 1)
+        seqNumber = 0;
+    else
+        seqNumber = 1;
+}
+
+bool existeCliente(string nick){
+
+    mtx.lock();
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if(actual->getNick() == nick){
+            mtx.unlock();
+            return true;
+        }
+    }
+    mtx.unlock();
+    return false;
+}
+
+void nuevoUsuario(string host, int port, string nick){
+     if(!(existeCliente(nick))){
+        Cliente* cliente = new Cliente(host,port,nick,activeTime,0);
+        //cliente->senderSeq = 0;
+        conectados.insert(cliente);
+
+        cantConectados++;
+        cantConexionesTotales++;
+        cout << "#clientes desde nuevoUsuario() es: " << cantConectados << endl;
+
+    }
+
+}
+
+void finConexion(string host, unsigned int port){
+
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if((actual->getHost() == host) && (actual->getPort() == port)){
+            conectados.erase(it);
+        }
+    }
+    cantConectados--;
+
+}
+
+void nuevoMensaje(){
+    cantMensajesEnviados++;
+}
+
+bool existeCliente(string host, unsigned int port){
+
+    mtx.lock();
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        if((actual->getHost() == host) && (actual->getPort() == port)){
+            mtx.unlock();
+            return true;
+        }
+    }
+    mtx.unlock();
+    return false;
+}
+
+void numeroSecuenciaCliente(string host, unsigned int port){
+    mtx.lock();
+    Cliente* cliente = buscarCliente(host, port);
+    if(cliente->getSenderSeq() == 1)
+        cliente->setSenderSeq(0);
+    else
+        cliente->setSenderSeq(1);
+
+    mtx.unlock();
+
+}
+
+void vaciarMemoria(){
+    for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
+        Cliente* actual = *it;
+        delete actual;
+    }
+    conectados.clear();
+}
 
 char* getConnectedMessage(Comando* command){
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-
-    set<string> users = variablesGlobales->getConectados();
+    set<string> users = getNickConectados();
 
     char* message = new char();
     strcpy(message, "<head>");
@@ -95,7 +227,7 @@ char* getConnectedMessage(Comando* command){
     strcat(message,"|");
     cout << "******1: " << message << endl;
     char* serverSeqStr = new char();
-    sprintf(serverSeqStr,"%d",variablesGlobales->getSeqNumber());
+    sprintf(serverSeqStr,"%d",seqNumber);
     strcat(message,serverSeqStr);
     strcat(message, "|");
 
@@ -120,9 +252,7 @@ char* getConnectedMessage(Comando* command){
 
 char* getRelayedMessage(Comando* command){
 
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-
-    Cliente* cliente = variablesGlobales->buscarCliente(command->getSourceHost(), command->getSourcePort());
+    Cliente* cliente = buscarCliente(command->getSourceHost(), command->getSourcePort());
 
     char* message = new char();
     strcpy(message, "<head>");
@@ -140,7 +270,7 @@ char* getRelayedMessage(Comando* command){
     strcat(message, "|");
 
     char* serverSeqStr = new char();
-    sprintf(serverSeqStr,"%d",variablesGlobales->getSeqNumber());
+    sprintf(serverSeqStr,"%d",seqNumber);
     strcat(message,serverSeqStr);
     strcat(message, "|");
 
@@ -149,7 +279,7 @@ char* getRelayedMessage(Comando* command){
     strcat(message,serverSeqStr);
     strcat(message, "</head><data>RELAYED_MESSAGE ");
 
-    strcat(message, (cliente->nick).c_str());
+    strcat(message, (cliente->getNick()).c_str());
     strcat(message, " ");
     strcat(message, command->getMensaje());
     strcat(message, "<CR></data>");
@@ -160,10 +290,9 @@ char* getRelayedMessage(Comando* command){
 }
 
 char* getPrivateMessage(Comando* command){
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
-    Cliente* cliente = variablesGlobales->buscarCliente(command->getSourceHost(), command->getSourcePort());
-    Cliente* receptor = variablesGlobales->buscarCliente(command->getDestinatarioMensajePrivado());
+    Cliente* cliente = buscarCliente(command->getSourceHost(), command->getSourcePort());
+    Cliente* receptor =buscarCliente(command->getDestinatarioMensajePrivado());
 
     char* message = new char();
     strcpy(message, "<head>");
@@ -175,16 +304,16 @@ char* getPrivateMessage(Comando* command){
     strcat(message,serverPortStr);
     strcat(message,"|");
 
-    strcat(message, (receptor->host).c_str());
+    strcat(message, (receptor->getHost()).c_str());
     strcat(message, "|");
 
     char* portStr = new char();
-    sprintf(portStr,"%d",receptor->port);
+    sprintf(portStr,"%d",receptor->getPort());
     strcat(message,portStr);
     strcat(message,"|");
 
     char* serverSeqStr = new char();
-    sprintf(serverSeqStr,"%d",variablesGlobales->getSeqNumber());
+    sprintf(serverSeqStr,"%d",seqNumber);
     strcat(message,serverSeqStr);
     strcat(message, "|");
 
@@ -193,7 +322,7 @@ char* getPrivateMessage(Comando* command){
     strcat(message,serverSeqStr);
     strcat(message, "</head><data>PRIVATE_MESSAGE ");
 
-    strcat(message, (cliente->nick).c_str());
+    strcat(message, (cliente->getNick()).c_str());
     strcat(message, " ");
     strcat(message, command->getMensaje());
     strcat(message, "<CR></data>");
@@ -204,9 +333,6 @@ char* getPrivateMessage(Comando* command){
 }
 
 char* getLogoutMessage(Comando* command){
-
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
-
 
     char* message = new char();
     strcpy(message, "<head>");
@@ -227,7 +353,7 @@ char* getLogoutMessage(Comando* command){
     strcat(message,"|");
 
     char* serverSeqStr = new char();
-    sprintf(serverSeqStr,"%d",variablesGlobales->getSeqNumber());
+    sprintf(serverSeqStr,"%d",seqNumber);
     strcat(message,serverSeqStr);
     strcat(message, "|");
 
@@ -245,7 +371,6 @@ char* getLogoutMessage(Comando* command){
 }
 
 void sendACK(Comando* command, struct sockaddr_in clienteDireccion){
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
     char* message = new char();
     strcpy(message,"<head>");
@@ -274,7 +399,7 @@ void sendACK(Comando* command, struct sockaddr_in clienteDireccion){
     strcat(message,"1|");
 
     char* serverSeqStr = new char();
-    sprintf(serverSeqStr,"%d",variablesGlobales->getSeqNumber());
+    sprintf(serverSeqStr,"%d",seqNumber);
     strcat(message,serverSeqStr);
     strcat(message,"</head><data></data>");
 
@@ -286,8 +411,6 @@ void sendACK(Comando* command, struct sockaddr_in clienteDireccion){
 }
 
 int sendMessage(Comando* command){
-
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
 
     char* message;
     switch (command->getTipo()){
@@ -326,7 +449,7 @@ int sendMessage(Comando* command){
 
         if ((bind(receiverSocket, (struct sockaddr*)&ack, sizeof(ack)) != -1)){
             sendto(senderSocket, message , strlen(message)+1, 0 , (struct sockaddr*)&multicast , sizeof(multicast));
-            set<string> conectados = variablesGlobales->getConectados();
+            set<string> conectados = getNickConectados();
             int attempts = 0;
 
             while((!conectados.empty() && (attempts < 4))){
@@ -342,19 +465,19 @@ int sendMessage(Comando* command){
                 if(recvfrom(receiverSocket, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&ackReceiver, &len) >= 0){
 
                     Comando* ackCommand = comandoParsear(buffer);
-                    if((ackCommand->getEsAck()) && (ackCommand->getNumSeq() == variablesGlobales->getSeqNumber())){
-                        Cliente* cli = variablesGlobales->buscarCliente(ackCommand->getSourceHost(), ackCommand->getSourcePort());
+                    if((ackCommand->getEsAck()) && (ackCommand->getNumSeq() == seqNumber)){
+                        Cliente* cli = buscarCliente(ackCommand->getSourceHost(), ackCommand->getSourcePort());
                         cout << "CLI" << attempts <<endl;
-                        conectados.erase(cli->nick);
+                        conectados.erase(cli->getNick());
                         cout << "BORRAR CLI" << attempts <<endl;
                     }
 
                 }else{
-                    cout << "TIMEOUT" << attempts <<endl;
+                    cout << "TIMEOUT " << attempts <<endl;
                     sendto(senderSocket, message , strlen(message)+1, 0 , (struct sockaddr*)&multicast , sizeof(multicast));
-                    cout << "RESEND" << attempts <<endl;
-                    conectados = variablesGlobales->getConectados();
-                    cout << "CONECTADOS" << attempts <<endl;
+                    cout << "RESEND " << attempts <<endl;
+                    conectados = getNickConectados();
+                    cout << "CONECTADOS " << attempts <<endl;
                     attempts++;
                 }
 
@@ -363,22 +486,23 @@ int sendMessage(Comando* command){
             if(attempts == 4){
                 for (set<string>::iterator it = conectados.begin(); it != conectados.end(); ++it){
                     string actual = *it;
-                    Cliente* noAck = variablesGlobales->buscarCliente(actual);
-                    variablesGlobales->finConexion(noAck->host,noAck->port);
+                    Cliente* noAck = buscarCliente(actual);
+                    finConexion(noAck->getHost(),noAck->getPort());
                 }
             }
             switch (command->getTipo()){
                 case MESSAGE:{
-                    variablesGlobales->nuevoMensaje();
+                    nuevoMensaje();
                 }break;
 
                 case PRIVATE_MESSAGE:{
-                    variablesGlobales->nuevoMensaje();
+                    nuevoMensaje();
                 }break;
 
                 case LOGOUT:{
-                    Cliente* loggedOut = variablesGlobales->buscarCliente(command->getSourceHost(), command->getSourcePort());
-                    variablesGlobales->finConexion(loggedOut->host,loggedOut->port);
+                    Cliente* loggedOut = buscarCliente(command->getSourceHost(), command->getSourcePort());
+                    finConexion(loggedOut->getHost(),loggedOut->getPort());
+
                 }
             }
 
@@ -398,9 +522,18 @@ int sendMessage(Comando* command){
     return 1;
 }
 
+
 int main(){
+
+    cantConectados = 0;
+    cantMensajesEnviados = 0;
+    cantConexionesTotales = 0;
+    seqNumber = 0;
+    activeTime = time(&activeTime);
+    mtx = Mutex();
+
     cout << "Estoy VIVO" << endl;
-    VariablesGlobales* variablesGlobales = variablesGlobales->getInstance();
+
     bool salir = false;
     char buffer[BUFFERSIZE];
 
@@ -427,7 +560,6 @@ int main(){
 
     int pidComandosConsola = fork();//Creo el hilo para los comandos de consola
     switch(pidComandosConsola){
-
         case -1:{
             cout << "Error al crear el hilo para los comandos de consola";
             return -1;
@@ -439,14 +571,11 @@ int main(){
             }else
                 exit(EXIT_FAILURE);
         }break;
-
     }
+
 
     while(!salir){
         memset (buffer,NULL,BUFFERSIZE);//vacio buffer
-
-
-
         struct timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 100000;
@@ -464,14 +593,13 @@ int main(){
             Comando* command = comandoParsear(buffer);
             sendACK(command, senderAddress);
             cout << "ACK" << endl;
-            Cliente* sender = variablesGlobales->buscarCliente(command->getSourceHost(), command->getSourcePort());
-            if(((sender != NULL)&&(sender->senderSeq == command->getNumSeq())) || ((sender == NULL) && (command->getNumSeq() == 0))){
+            Cliente* sender = buscarCliente(command->getSourceHost(), command->getSourcePort());
+            if(((sender != NULL)&&(sender->getSenderSeq() == command->getNumSeq())) || ((sender == NULL) && (command->getNumSeq() == 0))){
                 switch(command->getTipo()){
 
                     case LOGIN:{
-                        variablesGlobales->nuevoUsuario(command->getSourceHost(),command->getSourcePort(), command->getusuario());
-                        variablesGlobales->nuevaConexion();
-                        variablesGlobales->numeroSecuenciaCliente(command->getSourceHost(),command->getSourcePort());
+                        nuevoUsuario(command->getSourceHost(),command->getSourcePort(), command->getusuario());
+                        numeroSecuenciaCliente(command->getSourceHost(),command->getSourcePort());
 
                     }break;
 
@@ -503,7 +631,7 @@ int main(){
                                     cout << "Ocurrio un error en el envio del mensaje" << endl;
                                     return -1;
                                 }
-                                variablesGlobales->numeroSecuenciaCliente(command->getSourceHost(),command->getSourcePort());
+                                numeroSecuenciaCliente(command->getSourceHost(),command->getSourcePort());
                             }break;
 
                         }
@@ -516,9 +644,6 @@ int main(){
 
             //command->~Comando();
         }
-
-
-
 
         int consolaState;
         int exitedPid = waitpid(pidComandosConsola, &consolaState, WNOHANG);
@@ -533,7 +658,7 @@ int main(){
         }
     }
     close(receiverSocket);
-    variablesGlobales->vaciarMemoria();
+    vaciarMemoria();
     return 0;
 }
 

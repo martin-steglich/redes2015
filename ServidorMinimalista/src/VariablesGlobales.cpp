@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <mutex.h>
-
+/*
 
 using namespace std;
 //#define synchronized(M)  for(Lock M##_lock = M; M##_lock; M##_lock.setUnlock())
@@ -169,7 +169,7 @@ bool VariablesGlobales::existeCliente(string nick){
 }
 
 bool VariablesGlobales::existeCliente(string host, unsigned int port){
-    Mutex mtx = Mutex();
+
     mtx.lock();
     for (set<Cliente*>::iterator it = conectados.begin(); it != conectados.end(); ++it){
         Cliente* actual = *it;
@@ -183,7 +183,6 @@ bool VariablesGlobales::existeCliente(string host, unsigned int port){
 }
 
 void VariablesGlobales::numeroSecuenciaCliente(string host, unsigned int port){
-    Mutex mtx = Mutex();
     mtx.lock();
     Cliente* cliente = buscarCliente(host, port);
     if(cliente->senderSeq == 1)
@@ -203,3 +202,4 @@ void VariablesGlobales::vaciarMemoria(){
 
     conectados.clear();
 }
+*/

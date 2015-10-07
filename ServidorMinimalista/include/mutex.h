@@ -16,10 +16,6 @@ class Mutex
         return  pthread_mutex_lock(&mtx);
     }
 
-    int trylock() {
-        return  pthread_mutex_lock(&mtx);
-    }
-
     int unlock() {
         return  pthread_mutex_unlock(&mtx);
     }

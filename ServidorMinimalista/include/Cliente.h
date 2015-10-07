@@ -9,21 +9,24 @@ using namespace std;
 class Cliente
 {
     public:
-        Cliente(string host, unsigned int port, string nick, time_t activeTime);
+        Cliente(string host, unsigned int port, string nick, time_t activeTime,  unsigned int senderSeq);
 
         string getHost()const;
         unsigned int getPort()const;
         string getNick()const;
-        unsigned int getSequenceNumber();
+        unsigned int getSenderSeq();
+        void setSenderSeq(int);
         time_t getActiveTime()const;
 
         virtual ~Cliente();
+
     protected:
+
     private:
         string host;
         unsigned int port;
         string nick;
-        unsigned int sequenceNumber;
+        unsigned int senderSeq;
         time_t activeTime;
 
 

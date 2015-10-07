@@ -1,10 +1,12 @@
 #include "Cliente.h"
 
-Cliente::Cliente(string host, unsigned int port, string nick, time_t activeTime){
+Cliente::Cliente(string host, unsigned int port, string nick, time_t activeTime,unsigned int senderSeq){
     this->host = host;
     this->port = port;
     this-> nick = nick;
     this->activeTime = activeTime;
+    //this->senderSeq=sequenceNumber;
+    this-> senderSeq=senderSeq;
 }
 
 string Cliente::getHost()const{
@@ -23,9 +25,19 @@ time_t Cliente::getActiveTime()const{
     return activeTime;
 }
 
-unsigned int Cliente::getSequenceNumber(){
-    return sequenceNumber;
+
+unsigned int Cliente::getSenderSeq(){
+    return senderSeq;
 }
+
+
+void Cliente::setSenderSeq(int ss){
+    this->senderSeq = ss;
+}
+
+//unsigned int Cliente::getSequenceNumber(){
+//    return sequenceNumber;
+//}
 
 
 Cliente::~Cliente()
