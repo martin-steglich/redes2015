@@ -67,7 +67,7 @@
 	<stdexcept>
 	<string>
 
-1444102891 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
+1444270685 source:/home/tincho/Documents/redes2015/ServidorMinimalista/main.cpp
 	<iostream>
 	<cstdlib>
 	"ParserComandos.h"
@@ -86,9 +86,9 @@
 	<arpa/inet.h>
 	<unistd.h>
 	<pthread.h>
-	<mutex.h>
+	"mutex.h"
 	<stdexcept>
-	"VariablesGlobales.h"
+	<set>
 
 1444101177 /home/tincho/Documents/redes2015/ServidorMinimalista/include/VariablesGlobales.h
 	<set>
@@ -100,10 +100,10 @@
 1443839263 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/mutex.cpp
 	"mutex.h"
 
-1443893155 /home/tincho/Documents/redes2015/ServidorMinimalista/include/mutex.h
+1444257677 /home/tincho/Documents/redes2015/ServidorMinimalista/include/mutex.h
 	<pthread.h>
 
-1444101240 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
+1444257677 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/VariablesGlobales.cpp
 	"VariablesGlobales.h"
 	<stdexcept>
 	<string>
@@ -111,10 +111,10 @@
 	<cstdlib>
 	<mutex.h>
 
-1443893155 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/Cliente.cpp
+1444257677 source:/home/tincho/Documents/redes2015/ServidorMinimalista/src/Cliente.cpp
 	"Cliente.h"
 
-1443893155 /home/tincho/Documents/redes2015/ServidorMinimalista/include/Cliente.h
+1444257677 /home/tincho/Documents/redes2015/ServidorMinimalista/include/Cliente.h
 	<string>
 	<time.h>
 
