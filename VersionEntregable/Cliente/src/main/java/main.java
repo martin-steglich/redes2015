@@ -5,8 +5,8 @@
  */
 /*package main;
 
-import Vista.Chat;*/
-import cliente.ThreadCliente;
+import Vista.Chat;
+import cliente.ThreadCliente;*/
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

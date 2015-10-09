@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/*package main;
+package main;
 
-import Vista.Chat;*/
+import Vista.Chat;
 import cliente.ThreadCliente;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
