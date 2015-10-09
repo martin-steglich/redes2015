@@ -63,8 +63,15 @@ public class ThreadCliente implements Runnable {
         
         String[] split = message.split("</head>")[0].split("\\|");       
         int seqNum = Integer.parseInt(split[4]);
-        chat.getCliente().setServerSequence(Integer.parseInt(split[6]));
         
+        return seqNum; 
+    }
+    
+    public int getServerSequence(String message){
+        
+        String[] split = message.split("</head>")[0].split("\\|");       
+        int seqNum = Integer.parseInt(split[6]);
+              
         return seqNum; 
     }
     
@@ -163,6 +170,7 @@ public class ThreadCliente implements Runnable {
                                 socket = new DatagramSocket();
                                 chat.getCliente().setPort(socket.getLocalPort());
                                 chat.getCliente().setHost(InetAddress.getLocalHost().getHostAddress());
+                                sequenceNumber = 0;
                             }else{
                                 socket = new DatagramSocket(chat.getCliente().getPort());
                             }
@@ -213,6 +221,7 @@ public class ThreadCliente implements Runnable {
                                     
                                     String m = new String(getAck.getData());
                                     int seqNum = getSequenceNumber(m);
+                                    chat.getCliente().setServerSequence(getServerSequence(m));
                                     if((isACK(m))){
                                         if(sequenceNumber == seqNum){
                                             System.out.println("ACK recibido: " + m);
@@ -244,9 +253,7 @@ public class ThreadCliente implements Runnable {
                                if(msg.startsWith("LOGIN")){
                                    chat.getCliente().setConnected(true);
                                    chat.connect();
-                               }/*else if (msgAux.equals("LOGOUT")){
-                                   chat.getCliente().setConnected(false);
-                               }*/
+                               }
                            }
 
                         }
@@ -263,48 +270,56 @@ public class ThreadCliente implements Runnable {
                             //Recibo los mensajes a traves del multicast
                             byte[] data = new byte[1024];
                             DatagramPacket message = new DatagramPacket(data, data.length);
-                            multicastSocket.receive(message);
-                            receivedMessage = new String(message.getData());
-                            System.out.println("Mensaje Recibido: " + receivedMessage);
-                            //Envio el ACK para el paquete recibido
-                            int seqNum = getSequenceNumber(receivedMessage);
-                            String ack = armarPaquete(chat.getCliente().getHost(), chat.getCliente().getPort(), 
-                                    chat.getCliente().getServerHost(), chat.getCliente().getServerPort(), "", seqNum, 1);
-                            System.out.println("ACK Enviado: " + ack);
-                            InetAddress ip = InetAddress.getByName(chat.getCliente().getServerHost());
-                            DatagramSocket ackSocket = new DatagramSocket();
-                            DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, ip, 51234);
-                            ackSocket.send(ackPacket);
-                            ackSocket.close();
-                            sequenceNumber = chat.getCliente().getServerSequence();
-                            //Proceso el mensaje recibido
-                            
-                            if( sequenceNumber == seqNum){
-                                sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
-                                chat.getCliente().setServerSequence(sequenceNumber);
-                                //Si es el numero de secuencia que esperaba
-                                if(isForMe(chat.getCliente().getHost(), chat.getCliente().getPort(), receivedMessage)){
-                                    //Si el paquete es para mi (privado) o multicast
-                                    String typeMessage = getTypeMessage(receivedMessage);
-                                    if(typeMessage.equals("GOODBYE")){
-                                        chat.getCliente().setConnected(false);
-                                        chat.disconnect();
-                                        sequenceNumber = 0;
-                                    }else if(typeMessage.equals("CONNECTED")){
-                                        List<String> connected = getConnected(receivedMessage, chat.getCliente().getNick());
-                                        chat.getConnected(connected);
-                                    }else if(typeMessage.equals("RELAYED_MESSAGE")){
-                                        String msg = getMessage(receivedMessage);
-                                        msg = "Mensaje de " + msg;
-                                        chat.getCliente().addMessage(msg);
-                                        chat.updateMessages();
-                                    }else if(typeMessage.equals("PRIVATE_MESSAGE")){
-                                        String msg = getMessage(receivedMessage);
-                                        msg = "Mensaje Privado de " + msg;
-                                        chat.getCliente().addMessage(msg);
-                                        chat.updateMessages();
+                            try{
+                                multicastSocket.setSoTimeout(50);
+                                multicastSocket.receive(message);
+
+                                receivedMessage = new String(message.getData());
+                                System.out.println("Mensaje Recibido: " + receivedMessage);
+
+                                //Envio el ACK para el paquete recibido
+                                int seqNum = getSequenceNumber(receivedMessage);
+                                String ack = armarPaquete(chat.getCliente().getHost(), chat.getCliente().getPort(), 
+                                        chat.getCliente().getServerHost(), chat.getCliente().getServerPort(), "", seqNum, 1);
+                                System.out.println("ACK Enviado: " + ack);
+                                InetAddress ip = InetAddress.getByName(chat.getCliente().getServerHost());
+                                DatagramSocket ackSocket = new DatagramSocket();
+                                DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, ip, 51234);
+                                ackSocket.send(ackPacket);
+                                ackSocket.close();
+                                sequenceNumber = chat.getCliente().getServerSequence();
+                                //Proceso el mensaje recibido
+                                System.out.println(" sequencenumber " + sequenceNumber);
+                                System.out.println("seqnum " + seqNum);
+                                if( sequenceNumber == seqNum){
+                                    sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
+                                    chat.getCliente().setServerSequence(sequenceNumber);
+                                    //Si es el numero de secuencia que esperaba
+                                    if(isForMe(chat.getCliente().getHost(), chat.getCliente().getPort(), receivedMessage)){
+                                        //Si el paquete es para mi (privado) o multicast
+                                        String typeMessage = getTypeMessage(receivedMessage);
+                                        if(typeMessage.equals("GOODBYE")){
+                                            chat.getCliente().setConnected(false);
+                                            chat.disconnect();
+
+                                        }else if(typeMessage.equals("CONNECTED")){
+                                            List<String> connected = getConnected(receivedMessage, chat.getCliente().getNick());
+                                            chat.getConnected(connected);
+                                        }else if(typeMessage.equals("RELAYED_MESSAGE")){
+                                            String msg = getMessage(receivedMessage);
+                                            msg = "Mensaje de " + msg;
+                                            chat.getCliente().addMessage(msg);
+                                            chat.updateMessages();
+                                        }else if(typeMessage.equals("PRIVATE_MESSAGE")){
+                                            String msg = getMessage(receivedMessage);
+                                            msg = "Mensaje Privado de " + msg;
+                                            chat.getCliente().addMessage(msg);
+                                            chat.updateMessages();
+                                        }
                                     }
                                 }
+                            }catch(SocketTimeoutException e){
+                                
                             }
                             multicastSocket.close();
                         
