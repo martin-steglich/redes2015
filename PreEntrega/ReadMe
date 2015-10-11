@@ -1,0 +1,9 @@
+Compilacion y ejecucion del Cliente:
+
+1- Entrar a la carpeta Cliente y ejecutar el comando make.
+2- Ejecutar java main.
+
+Compilacion y ejecucion del Servidor:
+
+1- Entrar a la carpeta Servidor y ejecutar el comando make.
+2- Ejecutar ./Servidor
