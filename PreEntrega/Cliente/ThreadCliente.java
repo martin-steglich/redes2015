@@ -13,6 +13,7 @@ import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -155,6 +156,11 @@ public class ThreadCliente implements Runnable {
         return "";
     }
     
+    public boolean lost(int probability){
+        return (new Random()).nextInt(100) <= probability;
+
+    }
+
     @Override
     public void run() {
         DatagramSocket socket = null;
@@ -273,51 +279,54 @@ public class ThreadCliente implements Runnable {
                             try{
                                 multicastSocket.setSoTimeout(50);
                                 multicastSocket.receive(message);
+                                if(!lost(chat.getCliente().getLostProbability())){
+                                    receivedMessage = new String(message.getData());
+                                    System.out.println("Mensaje Recibido: " + receivedMessage);
 
-                                receivedMessage = new String(message.getData());
-                                System.out.println("Mensaje Recibido: " + receivedMessage);
+                                    //Envio el ACK para el paquete recibido
+                                    int seqNum = getSequenceNumber(receivedMessage);
 
-                                //Envio el ACK para el paquete recibido
-                                int seqNum = getSequenceNumber(receivedMessage);
+                                    InetAddress ip = InetAddress.getByName(chat.getCliente().getServerHost());
+                                    String ack = armarPaquete(chat.getCliente().getHost(), chat.getCliente().getPort(), 
+                                            ip.getHostAddress(), chat.getCliente().getServerPort(), "", seqNum, 1);
+                                    System.out.println("ACK Enviado: " + ack);
+                                    DatagramSocket ackSocket = new DatagramSocket();
+                                    DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, ip, 51234);
+                                    ackSocket.send(ackPacket);
+                                    ackSocket.close();
+                                    sequenceNumber = chat.getCliente().getServerSequence();
+                                    //Proceso el mensaje recibido
+                                    System.out.println(" sequencenumber " + sequenceNumber);
+                                    System.out.println("seqnum " + seqNum);
+                                    if( sequenceNumber == seqNum){
+                                        sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
+                                        chat.getCliente().setServerSequence(sequenceNumber);
+                                        //Si es el numero de secuencia que esperaba
+                                        if(isForMe(chat.getCliente().getHost(), chat.getCliente().getPort(), receivedMessage)){
+                                            //Si el paquete es para mi (privado) o multicast
+                                            String typeMessage = getTypeMessage(receivedMessage);
+                                            if(typeMessage.equals("GOODBYE")){
+                                                chat.getCliente().setConnected(false);
+                                                chat.disconnect();
 
-                                InetAddress ip = InetAddress.getByName(chat.getCliente().getServerHost());
-                                String ack = armarPaquete(chat.getCliente().getHost(), chat.getCliente().getPort(), 
-                                        ip.getHostAddress(), chat.getCliente().getServerPort(), "", seqNum, 1);
-                                System.out.println("ACK Enviado: " + ack);
-                                DatagramSocket ackSocket = new DatagramSocket();
-                                DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, ip, 51234);
-                                ackSocket.send(ackPacket);
-                                ackSocket.close();
-                                sequenceNumber = chat.getCliente().getServerSequence();
-                                //Proceso el mensaje recibido
-                                System.out.println(" sequencenumber " + sequenceNumber);
-                                System.out.println("seqnum " + seqNum);
-                                if( sequenceNumber == seqNum){
-                                    sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
-                                    chat.getCliente().setServerSequence(sequenceNumber);
-                                    //Si es el numero de secuencia que esperaba
-                                    if(isForMe(chat.getCliente().getHost(), chat.getCliente().getPort(), receivedMessage)){
-                                        //Si el paquete es para mi (privado) o multicast
-                                        String typeMessage = getTypeMessage(receivedMessage);
-                                        if(typeMessage.equals("GOODBYE")){
-                                            chat.getCliente().setConnected(false);
-                                            chat.disconnect();
-
-                                        }else if(typeMessage.equals("CONNECTED")){
-                                            List<String> connected = getConnected(receivedMessage, chat.getCliente().getNick());
-                                            chat.getConnected(connected);
-                                        }else if(typeMessage.equals("RELAYED_MESSAGE")){
-                                            String msg = getMessage(receivedMessage);
-                                            msg = "Mensaje de " + msg;
-                                            chat.getCliente().addMessage(msg);
-                                            chat.updateMessages();
-                                        }else if(typeMessage.equals("PRIVATE_MESSAGE")){
-                                            String msg = getMessage(receivedMessage);
-                                            msg = "Mensaje Privado de " + msg;
-                                            chat.getCliente().addMessage(msg);
-                                            chat.updateMessages();
+                                            }else if(typeMessage.equals("CONNECTED")){
+                                                List<String> connected = getConnected(receivedMessage, chat.getCliente().getNick());
+                                                chat.getConnected(connected);
+                                            }else if(typeMessage.equals("RELAYED_MESSAGE")){
+                                                String msg = getMessage(receivedMessage);
+                                                msg = "Mensaje de " + msg;
+                                                chat.getCliente().addMessage(msg);
+                                                chat.updateMessages();
+                                            }else if(typeMessage.equals("PRIVATE_MESSAGE")){
+                                                String msg = getMessage(receivedMessage);
+                                                msg = "Mensaje Privado de " + msg;
+                                                chat.getCliente().addMessage(msg);
+                                                chat.updateMessages();
+                                            }
                                         }
                                     }
+                                }else{
+                                    System.out.println("Ha ocurrido una perdida");
                                 }
                             }catch(SocketTimeoutException e){
                                 

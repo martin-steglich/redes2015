@@ -8,6 +8,7 @@ CLASSES = \
 	ThreadCliente.java \
 	Chat.java \
 	Cliente.java \
+	FormPerdidas.java \
 	main.java 
 
 default: classes

@@ -24,6 +24,7 @@ public class Cliente {
     private List<String> messagesToSend;
     private boolean connected;
     private int serverSequence;
+    private int lostProbability;
     
 
     public Cliente() {
@@ -31,6 +32,7 @@ public class Cliente {
         messagesToSend = new ArrayList();
         connected = false;
         port = null;
+        lostProbability = 0;
     }
     
     
@@ -79,6 +81,15 @@ public class Cliente {
         return connected;
     }
 
+    public synchronized int getLostProbability() {
+        return lostProbability;
+    }
+
+    public synchronized void setLostProbability(int lostProbability) {
+        this.lostProbability = lostProbability;
+    }
+    
+    
     public synchronized void setConnected(boolean connected) {
         this.connected = connected;
         messages = new ArrayList();
