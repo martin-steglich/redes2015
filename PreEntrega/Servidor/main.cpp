@@ -622,8 +622,10 @@ int main(){
             //cout << "Puerto origen: " << senderAddress.sin_port << endl;
 
             command = comandoParsear(buffer);
-            cout << "Mensaje recibido: "<< buffer << endl; //TODO sacarle el hedear
-            cout << "IP origen: " << command->getSourceHost() << endl;
+            if(command->getTipo() == MESSAGE){
+                cout << "Mensaje recibido: "<< command->getMensaje() << endl; //TODO sacarle el hedear
+                cout << "IP origen: " << command->getSourceHost() << endl;
+            }   
             if ( existeCliente(command->getSourceHost(), command->getSourcePort()) || ( command->getTipo() == LOGIN && !existeCliente(command->getSourceHost(), command->getSourcePort()) && !existeCliente(command->getusuario()))){
 
 
@@ -645,7 +647,7 @@ int main(){
                             cout << "Ocurrio un error en el envio del mensaje" << endl;
                             return -1;
                         }
-                        if(command->getTipo() != LOGOUT)
+                        if(existeCliente(command->getSourceHost(),command->getSourcePort()))
                             numeroSecuenciaCliente(command->getSourceHost(),command->getSourcePort());
 
                        }

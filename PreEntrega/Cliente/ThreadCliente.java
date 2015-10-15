@@ -203,10 +203,13 @@ public class ThreadCliente implements Runnable {
                             String message = armarPaquete(host,port, ip.getHostAddress(), serverPort, msg, sequenceNumber, 0);
                             System.out.println("Mensaje Enviado: " + message);
                             byte[] data = message.getBytes();
+                            System.out.println("SIZE: " + data.length);
                             DatagramPacket datagramPacket = new DatagramPacket(data, data.length, ip, serverPort);
-                           
-                            //Envio el paquete
-                            socket.send(datagramPacket);
+                            
+                            if(!lost(chat.getCliente().getLostProbability())){
+                                //Envio el paquete
+                                socket.send(datagramPacket);
+                            }
 
 
 
@@ -238,13 +241,17 @@ public class ThreadCliente implements Runnable {
                                         }
                                     }else{
                                         //Si se recibio un ACK, pero no coincide el número de secuencia, reenvio
-                                        socket.send(datagramPacket);
-                                        attempts++;
+                                        /*if(!lost(chat.getCliente().getLostProbability()))
+                                            socket.send(datagramPacket);
+                                        attempts++;*/
                                     }
                                }catch(SocketTimeoutException e){
+                                if(!lost(chat.getCliente().getLostProbability())){
                                    //Si se excede el timeout, reenvio
                                    socket.send(datagramPacket);
-                                   attempts++;
+                                   
+                                }
+                                attempts++;
                                }
                            }
                            socket.close();
@@ -296,8 +303,8 @@ public class ThreadCliente implements Runnable {
                                     ackSocket.close();
                                     sequenceNumber = chat.getCliente().getServerSequence();
                                     //Proceso el mensaje recibido
-                                    System.out.println(" sequencenumber " + sequenceNumber);
-                                    System.out.println("seqnum " + seqNum);
+                                    /*System.out.println(" sequencenumber " + sequenceNumber);
+                                    System.out.println("seqnum " + seqNum);*/
                                     if( sequenceNumber == seqNum){
                                         sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
                                         chat.getCliente().setServerSequence(sequenceNumber);

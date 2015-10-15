@@ -390,6 +390,8 @@ public class Chat extends javax.swing.JFrame {
               
               String receptor = (String) usersConnected.getSelectedItem();
               String msg = messageField.getText();
+
+
               
               cliente.sendPirvateMessage(msg, receptor);
               privateCheckbox.setSelected(false);
@@ -397,8 +399,12 @@ public class Chat extends javax.swing.JFrame {
               usersConnected.removeAllItems();
             }else{
                 requeriedFields.setVisible(false);
+                String msg = messageField.getText();
                 
-                cliente.sendRelayedMessage(messageField.getText());
+                //if(msg.length() < 10)
+                    cliente.sendRelayedMessage(msg);
+               /* else
+                    cliente.sendRelayedMessage(msg.substring(10));*/
             }
           
           messageField.setText("");
@@ -425,7 +431,12 @@ public class Chat extends javax.swing.JFrame {
             }else{
                 requeriedFields.setVisible(false);
                 
-                cliente.sendRelayedMessage(messageField.getText());
+                String msg = messageField.getText();
+                //System.out.println("SIZE: " + msg.getBytes().length);
+                //if(msg.length() < 10)
+                    cliente.sendRelayedMessage(msg);
+                /*else
+                    cliente.sendRelayedMessage(msg.substring(10));*/
             }
           
           messageField.setText("");
