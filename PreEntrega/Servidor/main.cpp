@@ -134,7 +134,6 @@ void *comandosConsola(void* arg){
         cout<< endl;
     }
 
-    //pthread_exit(NULL);
 }
 
 void changeSeqNumber(){
@@ -172,9 +171,8 @@ void nuevoUsuario(string host, int port, string nick){
         cliente->senderSeq = 0;
         conectados.insert(cliente);
 
-        //cantConectados++;
         cantConexionesTotales++;
-        //cout << "#clientes desde nuevoUsuario() es: " << conectados.size() << endl;
+	
         mtx.unlock();
     }
     
@@ -240,34 +238,34 @@ char* getConnectedMessage(Comando* command){
 
     char* message = new char();
     strcpy(message, "<head>");
-    cout << "******-2: " << message << endl;
+    
     strcat(message, command->getDestHost());
-    cout << "command->getDestHost(): " << command->getDestHost() << endl;
+    
     strcat(message, "|");
-    cout << "******-1: " << message << endl;
+    
     char* serverPortStr = new char();
     sprintf(serverPortStr,"%d",command->getDestPort());
     strcat(message,serverPortStr);
     strcat(message,"|");
-    cout << "******: " << message << endl;
+    
     strcat(message, command->getSourceHost());
     strcat(message, "|");
-    cout << "******0: " << message << endl;
+    
     char* portStr = new char();
     sprintf(portStr,"%d",command->getSourcePort());
     strcat(message,portStr);
     strcat(message,"|");
-    cout << "******1: " << message << endl;
+    
     char* serverSeqStr = new char();
     sprintf(serverSeqStr,"%d",seqNumber);
     strcat(message,serverSeqStr);
     strcat(message, "|");
 
     strcat(message, "0|");
-    cout << "******2: " << message << endl;
+    
     strcat(message,serverSeqStr);
     strcat(message, "</head><data>CONNECTED ");
-    cout << "******3: " << message << endl;
+    
     for (set<string>::iterator it = users.begin(); it != users.end(); ++it){
         if(it != users.begin())
             strcat(message," |");
@@ -276,8 +274,6 @@ char* getConnectedMessage(Comando* command){
         strcat(message,actual.c_str());
     }
     strcat(message,"<CR></data>");
-
-    cout << "******GETCONNECTED: " << message << endl;
 
     return message;
 }
@@ -498,12 +494,14 @@ void* sendMessage(void* arg){
 
                 char buffer[BUFFERSIZE];
                 if(recvfrom(receiverSocket, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&ackReceiver, &len) >= 0){
-                    //cout << "ALGO RECIBIDO" << endl;
+
                     Comando* ackCommand = comandoParsear(buffer);
+		    
                     if((ackCommand->getEsAck()) && (ackCommand->getNumSeq() == seqNumber)){
+		      
                         Cliente* cli = buscarCliente(ackCommand->getSourceHost(), ackCommand->getSourcePort());
-                        conectados.erase(cli->nick);
-                        //cout << "ACK BIEN RECIBIDO" << endl;
+			if (cli != NULL)
+			  conectados.erase(cli->nick);
                     }
 
                 }else{
@@ -619,11 +617,10 @@ int main(){
 
         if(recvfrom(receiverSocket, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&senderAddress, &len) >= 0){
             
-            //cout << "Puerto origen: " << senderAddress.sin_port << endl;
 
             command = comandoParsear(buffer);
             if(command->getTipo() == MESSAGE){
-                cout << "Mensaje recibido: "<< command->getMensaje() << endl; //TODO sacarle el hedear
+                cout << "Mensaje recibido: "<< command->getMensaje() << endl;
                 cout << "IP origen: " << command->getSourceHost() << endl;
             }   
             
@@ -662,7 +659,6 @@ int main(){
             }
 
         }
-        //mtx.lock();
 
     }
 

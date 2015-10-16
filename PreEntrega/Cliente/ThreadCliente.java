@@ -199,11 +199,12 @@ public class ThreadCliente implements Runnable {
                                 
                             String host = chat.getCliente().getHost();
                             Integer port = chat.getCliente().getPort();
+                            
                             //Le agrego el encabezado al mensaje a enviar
                             String message = armarPaquete(host,port, ip.getHostAddress(), serverPort, msg, sequenceNumber, 0);
-                            System.out.println("Mensaje Enviado: " + message);
+                            //System.out.println("Mensaje Enviado: " + message);
                             byte[] data = message.getBytes();
-                            System.out.println("SIZE: " + data.length);
+                            //System.out.println("SIZE: " + data.length);
                             DatagramPacket datagramPacket = new DatagramPacket(data, data.length, ip, serverPort);
                             
                             if(!lost(chat.getCliente().getLostProbability())){
@@ -233,7 +234,7 @@ public class ThreadCliente implements Runnable {
                                     chat.getCliente().setServerSequence(getServerSequence(m));
                                     if((isACK(m))){
                                         if(sequenceNumber == seqNum){
-                                            System.out.println("ACK recibido: " + m);
+                                            //System.out.println("ACK recibido: " + m);
                                             //Si se recibio un ACK, y coincide el numero de secuencia
                                             received = true;
                                             sequenceNumber = (sequenceNumber == 0) ? 1 : 0;
@@ -257,7 +258,7 @@ public class ThreadCliente implements Runnable {
                            socket.close();
                            chat.getCliente().getMessagesToSend().remove(0);
                            if(!received){
-                               String errorMessage = "Servidor no disponible en el host/puerto especificados";
+                               String errorMessage = "Servidor no disponible en el host/puerto especificados o Apodo Ya utilizado";
 
                                chat.showErrorMessage(errorMessage);
                                chat.getCliente().setConnected(false);
@@ -288,7 +289,7 @@ public class ThreadCliente implements Runnable {
                                 multicastSocket.receive(message);
                                 if(!lost(chat.getCliente().getLostProbability())){
                                     receivedMessage = new String(message.getData());
-                                    System.out.println("Mensaje Recibido: " + receivedMessage);
+                                    //System.out.println("Mensaje Recibido: " + receivedMessage);
 
                                     //Envio el ACK para el paquete recibido
                                     int seqNum = getSequenceNumber(receivedMessage);
@@ -296,7 +297,7 @@ public class ThreadCliente implements Runnable {
                                     InetAddress ip = InetAddress.getByName(chat.getCliente().getServerHost());
                                     String ack = armarPaquete(chat.getCliente().getHost(), chat.getCliente().getPort(), 
                                             ip.getHostAddress(), chat.getCliente().getServerPort(), "", seqNum, 1);
-                                    System.out.println("ACK Enviado: " + ack);
+                                    //System.out.println("ACK Enviado: " + ack);
                                     DatagramSocket ackSocket = new DatagramSocket();
                                     DatagramPacket ackPacket = new DatagramPacket(ack.getBytes(), ack.getBytes().length, ip, 51234);
                                     ackSocket.send(ackPacket);
