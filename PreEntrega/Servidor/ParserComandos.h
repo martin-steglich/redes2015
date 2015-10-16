@@ -35,7 +35,7 @@ private:
     tipoComando tipo;
     bool esAck;
     char* usuario;
-    char* mensaje;
+    char mensaje[512];
     bool mensajePrivado;
     char* destinatarioMensajePrivado;
     char* sourceHost;

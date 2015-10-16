@@ -626,6 +626,7 @@ int main(){
                 cout << "Mensaje recibido: "<< command->getMensaje() << endl; //TODO sacarle el hedear
                 cout << "IP origen: " << command->getSourceHost() << endl;
             }   
+            
             if ( existeCliente(command->getSourceHost(), command->getSourcePort()) || ( command->getTipo() == LOGIN && !existeCliente(command->getSourceHost(), command->getSourcePort()) && !existeCliente(command->getusuario()))){
 
 

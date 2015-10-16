@@ -14,7 +14,7 @@
             strcpy(this->usuario,usuario);
         }
         if(mensaje != NULL){
-            this->mensaje = new char();
+            memset(this->mensaje,0,512);
             strcpy(this->mensaje,mensaje);
         }
 
