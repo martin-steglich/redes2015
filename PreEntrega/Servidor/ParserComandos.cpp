@@ -112,6 +112,7 @@
 
     Comando* comandoParsear(char* buffer){
     char copia[512];
+    memset(copia,0,512);
     strcpy(copia,buffer);
     char * pch = strtok (copia,">");//saco hasta head
     pch = strtok (NULL, "|");//agarro hasta Pipe
@@ -155,7 +156,10 @@
         return res;
     }
     else if (strcmp(tipo,"MESSAGE") == 0){
-        char * msj = strtok(NULL,"<");
+        char msj[512];// = new char();
+        memset(msj,0,512);
+        pch = strtok(NULL,"<");
+        strcpy(msj,pch);
         Comando* res = new Comando(sourceHost,sourcePort,destHost,destPort,numSeq,isAck,MESSAGE,NULL,msj,false,NULL);
         return res;
     }

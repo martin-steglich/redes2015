@@ -134,6 +134,7 @@ void *comandosConsola(void* arg){
         cout<< endl;
     }
 
+    //pthread_exit(NULL);
 }
 
 void changeSeqNumber(){
@@ -160,7 +161,7 @@ bool existeCliente(string nick){
 }
 
 void nuevoUsuario(string host, int port, string nick){
-    
+
      if(!(existeCliente(nick))){
         mtx.lock();
         Cliente* cliente = new Cliente;
@@ -171,11 +172,12 @@ void nuevoUsuario(string host, int port, string nick){
         cliente->senderSeq = 0;
         conectados.insert(cliente);
 
+        //cantConectados++;
         cantConexionesTotales++;
-	
+        //cout << "#clientes desde nuevoUsuario() es: " << conectados.size() << endl;
         mtx.unlock();
     }
-    
+
 
 }
 
@@ -213,7 +215,7 @@ bool existeCliente(string host, unsigned int port){
 }
 
 void numeroSecuenciaCliente(string host, unsigned int port){
-    
+
     Cliente* cliente = buscarCliente(host, port);
     mtx.lock();
     if(cliente->senderSeq == 1)
@@ -240,9 +242,9 @@ char* getConnectedMessage(Comando* command){
     strcpy(message, "<head>");
     
     strcat(message, command->getDestHost());
-    
+    cout << "command->getDestHost(): " << command->getDestHost() << endl;
     strcat(message, "|");
-    
+   
     char* serverPortStr = new char();
     sprintf(serverPortStr,"%d",command->getDestPort());
     strcat(message,serverPortStr);
@@ -250,7 +252,7 @@ char* getConnectedMessage(Comando* command){
     
     strcat(message, command->getSourceHost());
     strcat(message, "|");
-    
+   
     char* portStr = new char();
     sprintf(portStr,"%d",command->getSourcePort());
     strcat(message,portStr);
@@ -262,10 +264,10 @@ char* getConnectedMessage(Comando* command){
     strcat(message, "|");
 
     strcat(message, "0|");
-    
+   
     strcat(message,serverSeqStr);
     strcat(message, "</head><data>CONNECTED ");
-    
+
     for (set<string>::iterator it = users.begin(); it != users.end(); ++it){
         if(it != users.begin())
             strcat(message," |");
@@ -274,6 +276,8 @@ char* getConnectedMessage(Comando* command){
         strcat(message,actual.c_str());
     }
     strcat(message,"<CR></data>");
+
+    
 
     return message;
 }
@@ -493,15 +497,13 @@ void* sendMessage(void* arg){
                 }
 
                 char buffer[BUFFERSIZE];
+                memset (buffer,0,BUFFERSIZE);
                 if(recvfrom(receiverSocket, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&ackReceiver, &len) >= 0){
-
                     Comando* ackCommand = comandoParsear(buffer);
-		    
                     if((ackCommand->getEsAck()) && (ackCommand->getNumSeq() == seqNumber)){
-		      
                         Cliente* cli = buscarCliente(ackCommand->getSourceHost(), ackCommand->getSourcePort());
-			if (cli != NULL)
-			  conectados.erase(cli->nick);
+                        if (cli != NULL)
+                            conectados.erase(cli->nick);
                     }
 
                 }else{
@@ -519,7 +521,8 @@ void* sendMessage(void* arg){
                 for (set<string>::iterator it = conectados.begin(); it != conectados.end(); ++it){
                     string actual = *it;
                     Cliente* noAck = buscarCliente(actual);
-                    finConexion(noAck->host,noAck->port);
+		    if (noAck != NULL)
+		      finConexion(noAck->host,noAck->port);
                 }
             }
             switch (command->getTipo()){
@@ -576,7 +579,7 @@ int main(){
 
     cout << "Servidor de Chat - Redes 2015" << endl;
 
-    
+
     char buffer[BUFFERSIZE];
 
     int receiverSocket = socket(PF_INET,SOCK_DGRAM, 0);
@@ -604,7 +607,7 @@ int main(){
     pthread_create(&consoleCommandThread, NULL, &comandosConsola, NULL);
 
     while(!isSalir()){
-        memset (buffer,NULL,BUFFERSIZE); //vacio buffer
+        memset (buffer,0,BUFFERSIZE); //vacio buffer
 
         struct timeval tv;
         tv.tv_sec = 0;
@@ -616,14 +619,13 @@ int main(){
         }
 
         if(recvfrom(receiverSocket, buffer ,BUFFERSIZE, 0 , (struct sockaddr*)&senderAddress, &len) >= 0){
-            
 
             command = comandoParsear(buffer);
             if(command->getTipo() == MESSAGE){
                 cout << "Mensaje recibido: "<< command->getMensaje() << endl;
                 cout << "IP origen: " << command->getSourceHost() << endl;
-            }   
-            
+            }
+
             if ( existeCliente(command->getSourceHost(), command->getSourcePort()) || ( command->getTipo() == LOGIN && !existeCliente(command->getSourceHost(), command->getSourcePort()) && !existeCliente(command->getusuario()))){
 
 
@@ -659,6 +661,7 @@ int main(){
             }
 
         }
+       
 
     }
 

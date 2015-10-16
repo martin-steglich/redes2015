@@ -345,6 +345,7 @@ public class ThreadCliente implements Runnable {
                     }break;
                 }
             } catch (Exception e) {
+		e.printStackTrace();
                 if((socket != null)&&(socket.isConnected())&&(!socket.isClosed())){
                    socket.close();
                 }
