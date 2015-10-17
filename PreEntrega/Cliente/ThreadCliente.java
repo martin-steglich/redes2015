@@ -210,15 +210,16 @@ public class ThreadCliente implements Runnable {
                             if(!lost(chat.getCliente().getLostProbability())){
                                 //Envio el paquete
                                 socket.send(datagramPacket);
-                            }
 
+                            }
+                            System.out.println("Mensaje Enviado - Intento 1: " + message);
 
 
                             //Variables para almacenar el ACK
                             byte[] ack = new byte[1024];
                             DatagramPacket getAck = new DatagramPacket(ack, ack.length);
 
-                            int attempts = 0; //Cantidad de reenvios
+                            int attempts = 1; //Cantidad de reenvios
                             boolean received = false; //variable de control sobre si fue recibido el paquete
                             
                            
@@ -226,7 +227,7 @@ public class ThreadCliente implements Runnable {
                             while((!received) && (attempts < 3)){
                                try{
                                     //Seteo el timeoute para recibir el ACK
-                                    socket.setSoTimeout(50);
+                                    socket.setSoTimeout(200);
                                     socket.receive(getAck);
                                     
                                     String m = new String(getAck.getData());
@@ -253,6 +254,8 @@ public class ThreadCliente implements Runnable {
                                    
                                 }
                                 attempts++;
+                                System.out.println("Mensaje Enviado - Intento " + attempts + ": " + message);
+                                
                                }
                            }
                            socket.close();
@@ -289,7 +292,7 @@ public class ThreadCliente implements Runnable {
                                 multicastSocket.receive(message);
                                 if(!lost(chat.getCliente().getLostProbability())){
                                     receivedMessage = new String(message.getData());
-                                    //System.out.println("Mensaje Recibido: " + receivedMessage);
+                                    System.out.println("Mensaje Recibido: " + receivedMessage);
 
                                     //Envio el ACK para el paquete recibido
                                     int seqNum = getSequenceNumber(receivedMessage);
@@ -345,7 +348,7 @@ public class ThreadCliente implements Runnable {
                     }break;
                 }
             } catch (Exception e) {
-		e.printStackTrace();
+		        e.printStackTrace();
                 if((socket != null)&&(socket.isConnected())&&(!socket.isClosed())){
                    socket.close();
                 }

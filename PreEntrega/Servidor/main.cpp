@@ -240,31 +240,31 @@ char* getConnectedMessage(Comando* command){
 
     char* message = new char();
     strcpy(message, "<head>");
-    
+
     strcat(message, command->getDestHost());
     cout << "command->getDestHost(): " << command->getDestHost() << endl;
     strcat(message, "|");
-   
+
     char* serverPortStr = new char();
     sprintf(serverPortStr,"%d",command->getDestPort());
     strcat(message,serverPortStr);
     strcat(message,"|");
-    
+
     strcat(message, command->getSourceHost());
     strcat(message, "|");
-   
+
     char* portStr = new char();
     sprintf(portStr,"%d",command->getSourcePort());
     strcat(message,portStr);
     strcat(message,"|");
-    
+
     char* serverSeqStr = new char();
     sprintf(serverSeqStr,"%d",seqNumber);
     strcat(message,serverSeqStr);
     strcat(message, "|");
 
     strcat(message, "0|");
-   
+
     strcat(message,serverSeqStr);
     strcat(message, "</head><data>CONNECTED ");
 
@@ -277,7 +277,7 @@ char* getConnectedMessage(Comando* command){
     }
     strcat(message,"<CR></data>");
 
-    
+
 
     return message;
 }
@@ -490,7 +490,7 @@ void* sendMessage(void* arg){
             while((!conectados.empty() && (attempts < 4))){
                 struct timeval tv;
                 tv.tv_sec = 0;
-                tv.tv_usec = 100000;
+                tv.tv_usec = 900000;
                 if (setsockopt(receiverSocket, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
                     perror("Error");
                     break;
@@ -611,7 +611,7 @@ int main(){
 
         struct timeval tv;
         tv.tv_sec = 0;
-        tv.tv_usec = 100000;
+        tv.tv_usec = 200000;
 
         if (setsockopt(receiverSocket, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
             cout << "No se puede setear el timeout" << endl;
@@ -622,10 +622,18 @@ int main(){
 
             command = comandoParsear(buffer);
             if(command->getTipo() == MESSAGE){
-                cout << "Mensaje recibido: "<< command->getMensaje() << endl;
-                cout << "IP origen: " << command->getSourceHost() << endl;
-            }
+                cout << "Mensaje recibido: MESSAGE "<< command->getMensaje() << endl;
 
+            }else if(command->getTipo() == PRIVATE_MESSAGE){
+                cout << "Mensaje recibido: PRIVATE_MESSAGE "<< command->getMensaje() << endl;
+            }else if(command->getTipo() == LOGIN){
+                cout << "Mensaje recibido: LOGIN "<< command->getusuario() << endl;
+            }else if(command->getTipo() == LOGOUT){
+                cout << "Mensaje recibido: LOGOUT" << endl;
+            }else if(command->getTipo() == GET_CONNECTED){
+                cout << "Mensaje recibido: GET_CONNECTED"<< endl;
+            }
+            cout << "IP origen: " << command->getSourceHost() << endl;
             if ( existeCliente(command->getSourceHost(), command->getSourcePort()) || ( command->getTipo() == LOGIN && !existeCliente(command->getSourceHost(), command->getSourcePort()) && !existeCliente(command->getusuario()))){
 
 
@@ -661,7 +669,7 @@ int main(){
             }
 
         }
-       
+
 
     }
 
