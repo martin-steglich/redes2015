@@ -219,7 +219,7 @@ public class ThreadCliente implements Runnable {
                             byte[] ack = new byte[1024];
                             DatagramPacket getAck = new DatagramPacket(ack, ack.length);
 
-                            int attempts = 1; //Cantidad de reenvios
+                            int attempts = 0; //Cantidad de reenvios
                             boolean received = false; //variable de control sobre si fue recibido el paquete
                             
                            
@@ -348,7 +348,7 @@ public class ThreadCliente implements Runnable {
                     }break;
                 }
             } catch (Exception e) {
-		        e.printStackTrace();
+		        System.out.println(e.getMessage());
                 if((socket != null)&&(socket.isConnected())&&(!socket.isClosed())){
                    socket.close();
                 }

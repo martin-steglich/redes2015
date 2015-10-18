@@ -6,9 +6,11 @@
  */
 
 
+
 #ifndef PARSERCOMANDOS_H
 #define	PARSERCOMANDOS_H
 
+#include <string>
 
 using namespace std;
 
@@ -17,16 +19,16 @@ enum tipoComando { LOGIN , LOGOUT, GET_CONNECTED, MESSAGE , PRIVATE_MESSAGE , AC
 class Comando {
 
 public:
-    Comando(char* sourceHost,unsigned int sourcePort, char* destHost,unsigned int destPort,unsigned int numSeq, bool esAck,tipoComando tipo,char* usuario,char* mensaje,bool mensajePrivado,char*  destinatarioMensajePrivado);
+    Comando(string sourceHost,unsigned int sourcePort, string destHost,unsigned int destPort,unsigned int numSeq, bool esAck,tipoComando tipo,string usuario,string mensaje,bool mensajePrivado,string  destinatarioMensajePrivado);
     tipoComando getTipo();
     bool getEsAck();
-    char* getusuario();
-    char* getMensaje();
+    string getusuario();
+    string getMensaje();
     bool getEsMensajePrivado();
-    char* getDestinatarioMensajePrivado();
-    char* getSourceHost();
+    string getDestinatarioMensajePrivado();
+    string getSourceHost();
     unsigned int getSourcePort();
-    char* getDestHost();
+    string getDestHost();
     unsigned int getDestPort();
     unsigned int getNumSeq();
     virtual ~Comando();
@@ -34,13 +36,13 @@ public:
 private:
     tipoComando tipo;
     bool esAck;
-    char* usuario;
-    char mensaje[512];
+    string usuario;
+    string mensaje;
     bool mensajePrivado;
-    char* destinatarioMensajePrivado;
-    char* sourceHost;
+    string destinatarioMensajePrivado;
+    string sourceHost;
     unsigned int sourcePort;
-    char* destHost;
+    string destHost;
     unsigned int destPort;
     unsigned int numSeq;
 };
