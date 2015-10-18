@@ -160,7 +160,6 @@ public class Cliente {
     }
     
     public synchronized void getConnected(){
-        System.out.println("*********************************************************");
         String msg = "GET_CONNECTED<CR>";
         messagesToSend.add(msg);
     }
